@@ -14,25 +14,271 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <article class="post-content">
-  <header class="post-header">
-    <h1>CSIT TISC 2024 CTF Challenge 7a - WebAsmLite</h1>
-    <div class="post-meta">
-      <span class="post-date">October 20, 2024</span>
-      
-      <span class="post-categories">
-        
-          <span class="category">ctf</span>
-        
-          <span class="category">tisc2024</span>
-        
-      </span>
-      
+  <div class="terminal-container">
+  <!-- Left Pane: ls-style post listing -->
+  <aside class="pane pane-left">
+    <div class="pane-header">
+      <span class="prompt">~/posts$</span> ls -la
     </div>
-  </header>
-  
-  <div class="post-body">
-    <p>YAS! Another web application, which is preferably one of my favourites. But truth be told, when i saw the title, i was expecting myself to get screwed whenever i see the letters ‘Asm’.  Anyway, when loading the webapp we’re presented with a simple NodeJS web application that looks like this:</p>
+    <div class="pane-subheader">
+      <input type="text" id="category-filter" placeholder="filter by category or filename..." autocomplete="off">
+    </div>
+    <div class="pane-content">
+      <div class="ls-output">
+        <div class="ls-line ls-header">total 13</div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/old_skool_atkdef_251292cc/" data-categories="projects,attkdef-ctf">
+          <div class="ls-row-1">
+            <span class="ls-name">251292cc.md</span>
+            <span class="ls-size">3241w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Mar 21</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">projects</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/kernel_expdev_setup_with_vscode_ee35e20e/" data-categories="vr,kernelpwn,pwn">
+          <div class="ls-row-1">
+            <span class="ls-name">ee35e20e.md</span>
+            <span class="ls-size">2200w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Mar 04</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">vr</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/mcrta_review_writeup_3ee1dbfe/" data-categories="certs,mcrta">
+          <div class="ls-row-1">
+            <span class="ls-name">3ee1dbfe.md</span>
+            <span class="ls-size">1189w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Jan 12</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">certs</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/crtp_review_writeup_98ab231c/" data-categories="certs,crtp">
+          <div class="ls-row-1">
+            <span class="ls-name">98ab231c.md</span>
+            <span class="ls-size">1307w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Nov 03</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">certs</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_8_fc50222e/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">fc50222e.md</span>
+            <span class="ls-size">1709w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 21</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item active" data-post="/posts/tisc24_challenge_7a_fa086321/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">fa086321.md</span>
+            <span class="ls-size">1380w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 20</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_6a_f360496c/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">f360496c.md</span>
+            <span class="ls-size">1472w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 19</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_5_c8ec6a29/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">c8ec6a29.md</span>
+            <span class="ls-size">1758w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 18</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_4_9c752a2b/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">9c752a2b.md</span>
+            <span class="ls-size">1086w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 17</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_3_8ab5e6e3/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">8ab5e6e3.md</span>
+            <span class="ls-size">675w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 16</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_2_6cc9934c/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">6cc9934c.md</span>
+            <span class="ls-size">838w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 15</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/tisc24_challenge_1_471f6270/" data-categories="ctf,tisc2024">
+          <div class="ls-row-1">
+            <span class="ls-name">471f6270.md</span>
+            <span class="ls-size">732w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Oct 14</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="ls-line post-item " data-post="/posts/stacktheflags-2022-topsecretadminpanel_369b9cd7/" data-categories="ctf">
+          <div class="ls-row-1">
+            <span class="ls-name">369b9cd7.md</span>
+            <span class="ls-size">861w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">Dec 10</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">ctf</span>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </aside>
+
+  <!-- Center Pane: Post content -->
+  <main class="pane pane-center">
+    <div class="pane-header">
+      <span class="prompt">~/</span>
+      <span id="center-path">CSIT TISC 2024 CTF Challenge 7a - Web...</span>
+    </div>
+    <div class="pane-content">
+      <div class="post-viewer active">
+        <article class="post-content">
+          <header class="post-header">
+            <h1>CSIT TISC 2024 CTF Challenge 7a - WebAsmLite</h1>
+            <div class="post-meta">
+              <span class="post-date">October 20, 2024</span>
+              
+              <span class="post-categories">
+                
+                  <span class="category">ctf</span>
+                
+                  <span class="category">tisc2024</span>
+                
+              </span>
+              
+            </div>
+          </header>
+          
+          <div class="post-body">
+            <p>YAS! Another web application, which is preferably one of my favourites. But truth be told, when i saw the title, i was expecting myself to get screwed whenever i see the letters ‘Asm’.  Anyway, when loading the webapp we’re presented with a simple NodeJS web application that looks like this:</p>
 
 <p><img src="/assets/images/tisc-2024/Pasted image 20240930055818.png" alt="" /></p>
 
@@ -187,12 +433,79 @@ READ:ascii84.txt;
 
 <p>But yeah it’s quite worthy to be of a challenge 7a standard  :)</p>
 
-  </div>
-  
-  <footer class="post-footer">
-    <a href="/" class="back-link">← Back to index</a>
-  </footer>
-</article>
+          </div>
+          
+          <footer class="post-footer">
+            <a href="/" class="back-link">← Back to index</a>
+          </footer>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Pane: About Me -->
+  <aside class="pane pane-right">
+    <div class="pane-header">
+      <span class="prompt">~/</span>whoami
+    </div>
+    <div class="pane-content">
+      <div class="about-section">
+        <!-- Profile Picture -->
+        <div class="profile-picture-container">
+          <img src="/assets/images/profile.png" alt="baesenseii" class="profile-picture">
+          <!-- Placeholder if image doesn't exist -->
+          <div class="profile-placeholder">
+            <span class="profile-initials">BS</span>
+          </div>
+        </div>
+        
+        <div class="about-content">
+          <h2>baesenseii@cyber</h2>
+          <p class="tagline">Offensive Security & Infrastructure Automation</p>
+          
+          <div class="bio">
+            <p>Penetration tester, security researcher, and automation enthusiast. Breaking things to understand how they work, then automating the fixes.</p>
+            
+            <p>Focused on offensive security research, red team operations, and infrastructure automation at scale.</p>
+          </div>
+          
+          <div class="social-links">
+            <div class="social-header">$ cat ~/.social</div>
+            <a href="https://github.com/baesenseii" target="_blank" class="social-link">
+              <span class="icon">→</span> github.com/baesenseii
+            </a>
+            <a href="https://sg.linkedin.com/in/sayedhamzah" target="_blank" class="social-link">
+              <span class="icon">→</span> linkedin.com/in/sayedhamzah
+            </a>
+          </div>
+          
+          <!-- Friends Section -->
+          <div class="links-section">
+            <div class="links-header">$ cat ~/.friends_of_bae</div>
+            <div class="links-list">
+              <a href="https://blog.0wl.sg" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@0wl - my ctf buddy / korkor / masterr</span>
+              </a>
+              <a href="https://blog.elmo.sg" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@elma - pwn guru 1</span>
+              </a>
+              <a href="https://kaligulaarmblessed.github.io/" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@kaligula_armblessed - pwn guru 2</span>
+              </a>
+              <a href="https://elession.github.io/" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@elession</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
 
   
   <script src="/assets/js/main.js"></script>

@@ -123,59 +123,72 @@
    * Initialize event listeners
    */
   function init() {
-    // Table post links
-    postLinksTable.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = link.dataset.post;
-        const title = link.querySelector('.col-title').textContent.trim();
-        showPost(url, title);
-        
-        // Update URL without page reload
-        history.pushState({ post: url }, '', url);
+    // Only initialize dynamic loading if we're on the index page
+    const isIndexPage = document.getElementById('post-index') !== null;
+    
+    if (isIndexPage) {
+      // Table post links
+      postLinksTable.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const url = link.dataset.post;
+          const title = link.querySelector('.col-title').textContent.trim();
+          showPost(url, title);
+          
+          // Update URL without page reload
+          history.pushState({ post: url }, '', url);
+        });
       });
-    });
-    
-    // Left pane ls-style links
-    postLinksLs.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = link.dataset.post;
-        const title = link.querySelector('.ls-name').textContent.trim();
-        showPost(url, title);
-        
-        // Update URL without page reload
-        history.pushState({ post: url }, '', url);
+      
+      // Left pane ls-style links
+      postLinksLs.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const url = link.dataset.post;
+          const title = link.querySelector('.ls-name').textContent.trim();
+          showPost(url, title);
+          
+          // Update URL without page reload
+          history.pushState({ post: url }, '', url);
+        });
       });
-    });
-    
-    // Handle browser back/forward
-    window.addEventListener('popstate', (e) => {
-      if (e.state && e.state.post) {
-        showPost(e.state.post, '');
-      } else {
-        showIndex();
+      
+      // Handle browser back/forward
+      window.addEventListener('popstate', (e) => {
+        if (e.state && e.state.post) {
+          showPost(e.state.post, '');
+        } else {
+          showIndex();
+        }
+      });
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        // Escape to go back to index
+        if (e.key === 'Escape' && postViewer.classList.contains('active')) {
+          showIndex();
+          history.pushState(null, '', '/');
+        }
+      });
+      
+      // Check if we should load a post on initial load
+      const currentPath = window.location.pathname;
+      if (currentPath && currentPath !== '/' && currentPath.includes('/posts/')) {
+        // Try to load the post
+        const postLink = document.querySelector(`[data-post="${currentPath}"]`);
+        if (postLink) {
+          const title = postLink.querySelector('.col-title, .ls-name')?.textContent.trim() || '';
+          showPost(currentPath, title);
+        }
       }
-    });
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      // Escape to go back to index
-      if (e.key === 'Escape' && postViewer.classList.contains('active')) {
-        showIndex();
-        history.pushState(null, '', '/');
-      }
-    });
-    
-    // Check if we should load a post on initial load
-    const currentPath = window.location.pathname;
-    if (currentPath && currentPath !== '/' && currentPath.includes('/posts/')) {
-      // Try to load the post
-      const postLink = document.querySelector(`[data-post="${currentPath}"]`);
-      if (postLink) {
-        const title = postLink.querySelector('.col-title, .ls-name')?.textContent.trim() || '';
-        showPost(currentPath, title);
-      }
+    } else {
+      // We're on a direct post page - make left pane links work
+      postLinksLs.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const url = link.dataset.post;
+          window.location.href = url;
+        });
+      });
     }
   }
   

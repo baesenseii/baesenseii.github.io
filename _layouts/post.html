@@ -2,26 +2,135 @@
 layout: default
 ---
 
-<article class="post-content">
-  <header class="post-header">
-    <h1>{{ page.title }}</h1>
-    <div class="post-meta">
-      <span class="post-date">{{ page.date | date: "%B %d, %Y" }}</span>
-      {% if page.categories.size > 0 %}
-      <span class="post-categories">
-        {% for category in page.categories %}
-          <span class="category">{{ category }}</span>
-        {% endfor %}
-      </span>
-      {% endif %}
+<div class="terminal-container">
+  <!-- Left Pane: ls-style post listing -->
+  <aside class="pane pane-left">
+    <div class="pane-header">
+      <span class="prompt">~/posts$</span> ls -la
     </div>
-  </header>
-  
-  <div class="post-body">
-    {{ content }}
-  </div>
-  
-  <footer class="post-footer">
-    <a href="{{ '/' | relative_url }}" class="back-link">← Back to index</a>
-  </footer>
-</article>
+    <div class="pane-subheader">
+      <input type="text" id="category-filter" placeholder="filter by category or filename..." autocomplete="off">
+    </div>
+    <div class="pane-content">
+      <div class="ls-output">
+        <div class="ls-line ls-header">total {{ site.posts.size }}</div>
+        {% for post in site.posts %}
+        {% assign filename = post.path | split: '/' | last %}
+        {% assign filename_length = filename | size %}
+        {% assign start_pos = filename_length | minus: 11 %}
+        {% assign hex_filename = filename | slice: start_pos, 11 %}
+        {% assign all_categories = post.categories | join: ',' %}
+        <div class="ls-line post-item {% if post.url == page.url %}active{% endif %}" data-post="{{ post.url }}" data-categories="{{ all_categories }}">
+          <div class="ls-row-1">
+            <span class="ls-name">{{ hex_filename }}</span>
+            <span class="ls-size">{{ post.content | number_of_words }}w</span>
+          </div>
+          <div class="ls-row-2">
+            <span class="ls-timestamp">{{ post.date | date: "%b %d" }}</span>
+            <span class="ls-owner">baesenseii</span>
+            <span class="ls-group">{{ post.categories | first | default: 'uncategorized' }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Center Pane: Post content -->
+  <main class="pane pane-center">
+    <div class="pane-header">
+      <span class="prompt">~/</span>
+      <span id="center-path">{{ page.title | truncate: 40 }}</span>
+    </div>
+    <div class="pane-content">
+      <div class="post-viewer active">
+        <article class="post-content">
+          <header class="post-header">
+            <h1>{{ page.title }}</h1>
+            <div class="post-meta">
+              <span class="post-date">{{ page.date | date: "%B %d, %Y" }}</span>
+              {% if page.categories.size > 0 %}
+              <span class="post-categories">
+                {% for category in page.categories %}
+                  <span class="category">{{ category }}</span>
+                {% endfor %}
+              </span>
+              {% endif %}
+            </div>
+          </header>
+          
+          <div class="post-body">
+            {{ content }}
+          </div>
+          
+          <footer class="post-footer">
+            <a href="{{ '/' | relative_url }}" class="back-link">← Back to index</a>
+          </footer>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Pane: About Me -->
+  <aside class="pane pane-right">
+    <div class="pane-header">
+      <span class="prompt">~/</span>whoami
+    </div>
+    <div class="pane-content">
+      <div class="about-section">
+        <!-- Profile Picture -->
+        <div class="profile-picture-container">
+          <img src="/assets/images/profile.png" alt="baesenseii" class="profile-picture">
+          <!-- Placeholder if image doesn't exist -->
+          <div class="profile-placeholder">
+            <span class="profile-initials">BS</span>
+          </div>
+        </div>
+        
+        <div class="about-content">
+          <h2>{{ site.title }}</h2>
+          <p class="tagline">{{ site.description }}</p>
+          
+          <div class="bio">
+            <p>Penetration tester, security researcher, and automation enthusiast. Breaking things to understand how they work, then automating the fixes.</p>
+            
+            <p>Focused on offensive security research, red team operations, and infrastructure automation at scale.</p>
+          </div>
+          
+          <div class="social-links">
+            <div class="social-header">$ cat ~/.social</div>
+            <a href="https://github.com/baesenseii" target="_blank" class="social-link">
+              <span class="icon">→</span> github.com/baesenseii
+            </a>
+            <a href="https://sg.linkedin.com/in/sayedhamzah" target="_blank" class="social-link">
+              <span class="icon">→</span> linkedin.com/in/sayedhamzah
+            </a>
+          </div>
+          
+          <!-- Friends Section -->
+          <div class="links-section">
+            <div class="links-header">$ cat ~/.friends_of_bae</div>
+            <div class="links-list">
+              <a href="https://blog.0wl.sg" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@0wl - my ctf buddy / korkor / masterr</span>
+              </a>
+              <a href="https://blog.elmo.sg" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@elma - pwn guru 1</span>
+              </a>
+              <a href="https://kaligulaarmblessed.github.io/" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@kaligula_armblessed - pwn guru 2</span>
+              </a>
+              <a href="https://elession.github.io/" target="_blank" class="link-item">
+                <span class="link-icon">›</span>
+                <span class="link-text">@elession</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
