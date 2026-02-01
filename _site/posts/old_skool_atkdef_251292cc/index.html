@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bringing back the old school: Good ol' Attack-Defense CTF Environments</title>
+  <meta name="description" content="I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT.
+Preface...">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>Bringing back the old school: Good ol' Attack-Defense CTF Environments</h1>
+    <div class="post-meta">
+      <span class="post-date">March 21, 2025</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">projects</span>
+        
+          <span class="category">attkdef-ctf</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT.</p>
+<h1 id="preface">Preface</h1>
+
+<p>For those of you who may not know, I “volunteered” to be one of the Worldskills Coaches under the Cyber Security trait to train individuals to represent the polytechnic that I’m working in. Being the ONLY lecturer with CTF/Cybersecurity competition experience, I took up the responsibility of training the students for the CTF component (as it is part of the actual competition based on the technical specs here):</p>
+<ul>
+  <li><a href="http://www.worldskills.sg/docs/default-source/default-document-library/wss2025_technical-description_cybersecurity.pdf?sfvrsn=9fc583ad_0">http://www.worldskills.sg/docs/default-source/default-document-library/wss2025_technical-description_cybersecurity.pdf?sfvrsn=9fc583ad_0</a></li>
+</ul>
+
+<p>While deciding on the training type to use, I thought about this to myself: <em>“Jeopardy CTFs are just too overrated and boring. What happened to the OG CTFs that I used to take part when I was a student?”</em></p>
+
+<p>And that, is when the idea of bringing back a Attack-Defense CTF was born. :)</p>
+<h1 id="brainstorm-phase">Brainstorm Phase</h1>
+<h2 id="jeopardy-ctfs-vs-attack-defense-ctfs">Jeopardy CTFs vs Attack-Defense CTFs</h2>
+
+<p>Not sure how much you know about these two CTF types, but let me just do my take on these CTF modes, along with the pros and cons.</p>
+<h3 id="jeopardy-ctf">Jeopardy CTF</h3>
+
+<p>I am sure many of us in the Cyber scene are familiar with Jeopardy CTFs whereby participants attempt various challenges with one goal in mind: submit the CORRECT flag for the challenge. Based on my observation, I feel that Jeopardy CTFs can achieve the following outcomes:</p>
+
+<ul>
+  <li>
+    <p>Learn a new skill/concept based on the challenge category (e.g pwn -&gt; buffer overflow/ret2win, web -&gt; perform SSTI with WebApps that have blacklist filters)</p>
+  </li>
+  <li>
+    <p>Accelerate transfer of knowledge based on the challenge on an exponential scale, due to the time crunch and gamification of learning.</p>
+  </li>
+</ul>
+
+<p>However, there are its drawbacks (in my humble opinion, many might disagree but please do let me know as this is merely my opinion):</p>
+
+<ul>
+  <li>
+    <p>Based on CTFs that I personally have attended over the years, I feel that there are CTF challenges that were just made to “make life difficult for others to learn”.</p>
+  </li>
+  <li>Real-world scenarios and implementations in most organisations involve a myriad of IT assets, networks and security controls in place. While each CTF challenge covers a specific area of knowledge that the challenge creator wants participants to learn, going up against real-world scenarios and systems involve demonstrating and chaining multiple areas of knowledge in order to solve the problem at hand.
+    <ul>
+      <li>For example, a hacker managed to identify a custom network service that has been identified to have SQL injection and an administrative API call that is susceptible to a buffer overflow attack. So how now?</li>
+    </ul>
+  </li>
+  <li>Based on my experience in teaching students, nowadays the gathering and analysis of information tends to be a daunting task for the students (and most of the time they throw it to GenAI tools like ChatGPT, in hopes that they can “get the answer”).
+    <h3 id="attack-defense-ctfs">Attack-Defense CTFs</h3>
+  </li>
+</ul>
+
+<p>For this CTF, teams are given assets (of various services and vulnerabilities) to defend/harden while attempting to gain access to assets of other teams to score points. This, in my opinion, would the closest thing for participants to experience a red team vs blue team exercise (in fact I would call it ‘almost purple’ because teams are to both attack and defend, and there’s no threat intelligence element)</p>
+
+<p>In terms of knowledge building, AttkDef CTFs primarily focus on the application of known knowledge (e.g hardening/lockdown of servers, securing administration services such as SSH, HTTPS, etc). Of course, depending on the complexity, sometimes network devices are also involved as part of the assets (but i have my reservations on this).</p>
+
+<p>So if you haven’t done any form of server administration, quite frankly doing this CTF as a blue teamer is gonna be tough.</p>
+
+<p>But now, onto its drawbacks:</p>
+<ul>
+  <li>As these involve actual hardware components that make up the infrastructure of the CTF, gamemasters would now have to serve as IT Helpdesk personnel. In my years of playing these type of CTFs, due to the inexperience of some of the teams, issues such as getting locked out from the assets, or restoration of assets due to opposing teams “accidentally” wiping the asset software were pretty common.</li>
+  <li>As all the competitor equipment and their assets all reside within the same physical network, network-based DDoS attacks are a huge cause of concern (despite informing people NOT to do it during the briefings). I remember playing in one of the AttkDef CTFs whereby I wasn’t able to access the web servers of all opposing teams as someone was apparently running a SlowLorris attack.
+    <h3 id="final-decision">Final Decision</h3>
+  </li>
+</ul>
+
+<p>Eventually I decided to use the AttkDef CTF format, as I felt that this CTF format would be very useful to pit the teams against each other in terms of both blue and red teaming skills.</p>
+
+<p>So we got the format up, next are the following questions to answer in order to move forward:</p>
+<ul>
+  <li>What equipment do I have right now?</li>
+  <li>What networks/subnets do I need?</li>
+  <li>How do we keep track of scoring?</li>
+  <li>How many targets will there be for each team? Are the targets unique per team, or duplicates for all teams?</li>
+</ul>
+
+<p>And the most important question to ask while designing this: DO WE HAVE MOOLAH to support this? Well at that point in time, I will definitely have to say.. no.</p>
+<h1 id="design-phase">Design Phase</h1>
+<h2 id="network-diagram-overview">Network Diagram Overview</h2>
+<p>Well the first thing we need to do is to draw up a simple network diagram to understand what components are required in this case:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320211839.png" alt="" /></p>
+
+<p>As a description of what this diagram is about:</p>
+<ul>
+  <li>Only two teams will be playing this exercise, with each team having his/her own attacker network, defender network, and a set of targets.</li>
+  <li>A scoreboard will be created to check the status of the applications hosted on the target network (both Team 1 and Team 2).</li>
+  <li>All app servers are configured with Wazuh agents + Snort IDS to improve detection rules.</li>
+  <li>Both teams will have a Wazuh XDR SIEM for them to practise their detection capabilities.</li>
+  <li>And ALL of these machines and networks are to be used on ONE powerful server (because I do not have the luxury to have MULTIPLE powerful servers)</li>
+</ul>
+
+<p>In terms of the network access control measures, here’s a scuffed access control matrix table to give you some clarity on how the firewall rules are to be implemented in the KOTH-ROUTER (or just a core router in general):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th><strong>Attacker Network (Team 1)</strong></th>
+      <th><strong>Defender Network (Team 1)</strong></th>
+      <th><strong>Target Network (Team 1)</strong></th>
+      <th><strong>Attacker Network (Team 2)</strong></th>
+      <th><strong>Defender Network (Team 2)</strong></th>
+      <th><strong>Target Network (Team 2)</strong></th>
+      <th><strong>Scoreboard</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Attacker Network (Team 1)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><strong>Defender Network (Team 1)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td>X<br /><br />SSH to app machines via TCP 3222 (as root)</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Target Network (Team 1)</strong></td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Attacker Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><strong>Defender Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X<br /><br />SSH to app machines via TCP 3222 (as root)</td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Target Network (Team 2)</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+      <td>X</td>
+    </tr>
+    <tr>
+      <td><strong>Scoreboard</strong></td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+      <td>X</td>
+      <td>X</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The main VM that will be implementing the network rules is the KOTH_ROUTER VM, which is just simply a Ubuntu Server VM with IP Forwarding + iptables enabled. IPTables will serve as an enforcer of the above access control matrix table, with the default INPUT policy set to ‘DROP’.</p>
+
+<p>At this stage the design seems like a good idea, but there’s just one problem: The server that I wanted to use was located in one of the Level 6 labs where it was such a big hassle to move it to the training area (which was at Level 2). The last time I pushed this rack to do an on-site CTF, the wheels were badly damaged due to the flooring and the equipment was left untouched for quite a significant amount of time. So we need to find a way to figure out how we can connect these users to this server:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320214904.png" alt="" /></p>
+
+<h2 id="introduction-to-software-defined-networking-sdn-platforms">Introduction to Software Defined Networking (SDN) Platforms</h2>
+
+<p>Honestly speaking, I didn’t knew at first what SDN meant, even though I kept hearing this buzzword so many times when I was conducting an ‘Introduction to 5G’ workshop for external clients. I know what it does in terms of high-level, but didn’t know of any examples until I realised that I have been using ONE before:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320215647.png" alt="" /></p>
+
+<p>Back in the days before Steam, whenever my friends and I wanted to play Counter-Strike together, we would use this Hamachi VPN in order for us to connect to the Counter-Strike server hosted by one of my friends. How it works is that:</p>
+<ul>
+  <li>It is required to sign up for an account in Hamachi VPN so that you can get a Hamachi ID.</li>
+  <li>Install Hamachi VPN on your system.</li>
+  <li>Create a Hamachi Network ID and share it with your friends.</li>
+  <li>Your friends join in your network via the Hamachi Network ID (in which you will need to approve your friend who is joining into the network)</li>
+  <li>You can now communicate with each other based on the IP address provided by Hamachi VPN, as long as your device is <strong>connected to the Internet :)</strong></li>
+</ul>
+
+<p>In other words, SDN platforms like Hamachi allows for privatised peer-to-peer networks, and users can create it with no extra cost. However, this absence of cost does comes with limitations, in which if you would want to expand it you will have to pay for it. For Hamachi, I can only have up to 5 Hamachi users across all the Hamachi Networks that I own, which kinda sucks to be honest as i do want to consider at least like a 3v3 matchup for the platform.</p>
+
+<p>So this led to me in researching for other SDN alternatives, and I came across this SDN called ZeroTier (https://www.zerotier.com):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320221553.png" alt="" /></p>
+
+<p>Based on the pricing, it seems that the Basic version allows me to connect up to 10 devices across 3 networks. However, this kind of contradicts the current Free plan that I am having currently as I can create unlimited networks but up to 25 devices (as shown in the screenshot below):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320221453.png" alt="" /></p>
+
+<p>However, this can be easily solved by creating more than 1 account to increase the support for network devices and the networks to create, as what really matters at the end of the day is the ZeroTier Network ID. Now what’s even more interesting about ZeroTier is that, unlike Hamachi (to my knowledge), ZeroTier allows you to customise what private subnet that you want to use for the network (which makes it totally awesome as it will help with the network diagram):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320223621.png" alt="" /></p>
+
+<p>Using ZeroTier, a finalised network diagram was made to include even the ZeroTier IDs to join:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320223817.png" alt="" /></p>
+
+<p>Do take note of the following:</p>
+<ul>
+  <li>The target networks for both Team 1 and Team 2 are categorised as ‘Internal’ which means that the apps/services are going to be hosted via Vagrant with VirtualBox as the virtualisation engine.</li>
+  <li>I also created a ZeroTier Network for management purposes so that I can SSH directly into the physical server that is hosting the virtualised applications and access all the virtualised machines accordingly using <code class="language-plaintext highlighter-rouge">vagrant ssh</code>
+    <h2 id="getting-internet-access-for-a-standalone-server">Getting Internet Access for a standalone server</h2>
+  </li>
+</ul>
+
+<p>If you had noticed the picture above showing the server used, there is no nearby LAN port whatsoever that allows my server to obtain Internet access. And based on what we discussed in our network diagram, Internet access IS MANDATORY in order to:</p>
+<ul>
+  <li>Establish SD-WAN connections to the ZeroTier networks</li>
+  <li>More importantly, to launch our Vagrant machines (which require the download of Vagrant boxes from the Internet)</li>
+</ul>
+
+<p>The way to solve this solution is pretty simple:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320225743.png" alt="" /></p>
+
+<p>As you can see here in this picture, notice that there’s a small Raspberry Pi. This device is currently acting like a modem+router using the following approach:</p>
+<ul>
+  <li>WiFi adapter connected to the Guest network in the school premises (just a simple login with my credentials worked fine)</li>
+  <li>
+    <p>In the Raspberry Pi, the following configurations were done:</p>
+
+    <ul>
+      <li>Enable IP forwarding via sysctl</li>
+      <li>Configure a static IP address on the LAN port of the RPi (e.g 10.10.10.1/30)</li>
+      <li>Configure the following iptables rule to perform NAT via the WiFi adapter as the outgoing interface (in this example below it is wlan0):</li>
+    </ul>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  iptables -t nat -A POSTROUTING -j MASQUERADE -o wlan0
+</code></pre></div>    </div>
+
+    <ul>
+      <li>Ensure that it is persistent by installing the ‘iptables-persistent’ package and save the iptable rules (note that i was running Raspbian OS):</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	sudo apt update &amp;&amp; sudo apt install -y iptables-persistent;
+	iptables-save &gt; /etc/iptables/rules.v4
+</code></pre></div></div>
+<h2 id="app-deployment--access-isolation">App Deployment &amp; Access Isolation</h2>
+
+<p>Based on previous experiences of organising CTFs and providing students environments to practise their skills, one thing that stresses me out is the level of access that the participant has to the target machines. Looking at the access control matrix, it can be seen that anyone in the defender network is able to access their own targets (which is allowed of course, in order to allow participants in hardening the server and implement their detection controls via Wazuh).</p>
+
+<p>So the real question remains: do I allow SSH access to the Vagrant machine, or the Docker container?</p>
+
+<p>After much thought, I decided to only allow key-based root SSH access to the Docker container (through TCP 3222) due to the following reasons:</p>
+
+<ul>
+  <li>
+    <p>The attackers, upon gaining initial access to the vulnerable service, would most likely be residing within the Docker container. This means that as a defender, you should perform your hardening and detection controls within the environment that the attacker is going to be in (which is the Docker container itself)</p>
+  </li>
+  <li>
+    <p>TCP port 3222 was selected because of the dynamic port range that Vagrant uses when deploying boxes via SSH (usually within the ranges of 2220 to 2999)</p>
+  </li>
+  <li>
+    <p>From the administrator’s perspective (which is me), if the whole vagrant machine is screwed up, at least i can just SSH directly to the physical server and run <code class="language-plaintext highlighter-rouge">vagrant destroy -f</code> and <code class="language-plaintext highlighter-rouge">vagrant up</code>. This gives me more granular administrative control as compared to the defenders (which makes sense as I am the gamemaster after all)</p>
+  </li>
+</ul>
+
+<p>The diagram below shows an example of how each target application is being deployed within the platform:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320231654.png" alt="" /></p>
+<h2 id="scoreboard-creation">Scoreboard Creation</h2>
+
+<p>For this, truth be told that I didn’t do much for this component as it took me quite a while to find a good scoreboard system that is based on King of The Hill. However I was lucky enough to come across this repository:</p>
+<ul>
+  <li>https://github.com/InjectionSoftwareandSecurityLLC/Propane</li>
+</ul>
+
+<p>It was pretty intuitive to use as it’s based on Flask, and in this case I had to change the HTML templates a bit to suit to the training environment. Basically if you want to score a point on a target that you have compromised, you are to add the following custom tag in the main page of the web application (the value to specify is configured inside the propane_config.ini file):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;team&gt;faint&lt;/team&gt;
+</code></pre></div></div>
+
+<p>Only one tag is allowed within the page, and if successful, you will see something like this on the compromised target:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320235241.png" alt="" /></p>
+
+<p>The scoreboard will do a constant poll on the websites hosted on all the targets, and the points will start to increase as long as the tag remains within the index page of the website hosted on TCP 80.</p>
+<h2 id="automated-deployment">Automated Deployment</h2>
+
+<p>Of course, how can I even forget this? Automation is definitely the ultimate form of smart laziness. And thanks to my constant meddling with IaC code via Vagrant and Docker, I created two scripts that would help deploy the platform without any issue (but there are still some manual actions to be done during the deployment process such as authorising the boxes to the ZeroTier networks):</p>
+
+<ul>
+  <li>generator.py - Generates an entire deployment folder (called a project) that dynamically performs the following:
+    <ul>
+      <li>Generation of the IaC files (e.g Vagrantfile, Dockerfile) based on the configuration file provided (config.txt), which also includes the routes and installation/configuration of the Wazuh agents.</li>
+      <li>Generation of the SSH keys used for root access to the Docker containers (for the defenders)</li>
+      <li>Dynamic generation of the IP addresses for the targets (for randomisation purposes)</li>
+    </ul>
+  </li>
+  <li>manager.py - Allows the administrator to start/stop/ssh any Vagrant boxes belonging to the project without the need to specify the Vagrant ID or navigate to the current working directory of the Vagrant machine.</li>
+</ul>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320233257.png" alt="" /></p>
+<h1 id="outcome">Outcome</h1>
+
+<p>Thankfully I had an opportunity to test this deployment out in school with some of the students (mainly for the Worldskills team), and we did have lots of fun in this case:</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320233056.png" alt="" /></p>
+
+<p>*Note: The scoreboard shows the labelling of the targets (e.g T1_Target1 = Target1 machine owned by Team 1). The names with the light blue highlights are the members of the opposing team that managed to hack into the target by planting the following tag:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;team&gt;faint&lt;/team&gt;
+</code></pre></div></div>
+
+<p>As I was playing in Team 2, I also took the opportunity to try out establishing a C2 server using Sliver with multiplayer mode enabled (which was sooooo badass to be honest):</p>
+
+<p><img src="/assets/images/attkdef_platform/Pasted image 20250320234349.png" alt="" /></p>
+
+<p>But what made me even more curious was to figure out how we could actually detect the attacks using the Wazuh rules that the team had customised (in addition to the default rulesets), however due to the mood and performance from the other team (based on the scoreboard), I don’t think we managed to get an opportunity to do so.</p>
+<h1 id="thoughts">Thoughts</h1>
+
+<p>As of now, I personally feel that cybersecurity education is too decoupled and heavily focused on blue team elements and not red team elements. Based on my observation, it seems that whenever students learn about the security aspects (e.g auditing, network security, forensics), they do not seem to be convinced on the rationale of the implementations/actions even with the explanations (apart from the fact that it’s part of ‘security best practices’). Therefore, the best way to make students understand the rationale is going through an actual scenario, which is a form of experiential learning.</p>
+
+<p>I personally feel that this platform provides a really good summary exercise for students in cybersecurity to establish the bridge between both aspects of red and blue elements. The funny thing about it is that this is regularly practised in the industry, in the form of Table Top Exercises. So the important question here is, shouldn’t we all be doing it as well?</p>
+
+<p>Just a food for thought on this issue, and I hope that I could encourage more people to try setting up such environments (with my tool hopefully). The public version of this platform is here: https://github.com/baesenseii/atkdef_platform/</p>
+
+<p>Just raise the issues if there’s anything else that needs to fix!</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

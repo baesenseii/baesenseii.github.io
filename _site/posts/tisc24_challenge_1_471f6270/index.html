@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSIT TISC 2024 CTF Challenge 1 - Navigating the Digital Labyrinth</title>
+  <meta name="description" content="Finally having the time to do a write-up for the TISC 2024 challenges, starting with the first challenge called “Navigating the Digital Labyrinth”:
+">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>CSIT TISC 2024 CTF Challenge 1 - Navigating the Digital Labyrinth</h1>
+    <div class="post-meta">
+      <span class="post-date">October 14, 2024</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">ctf</span>
+        
+          <span class="category">tisc2024</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>Finally having the time to do a write-up for the TISC 2024 challenges, starting with the first challenge called “Navigating the Digital Labyrinth”:</p>
+
+<p><img src="/assets/images/tisc-2024/challenge-1-1.png" alt="" /></p>
+
+<p>Based on the description provided, there is an online persona that we need to search over various social media platforms, and it turns out this is the only one that matches the user ‘vi_vox223’:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050231.png" alt="" /></p>
+
+<p>Just like any other typical CTF challenge that involves social media, I’m sure that there’s more platforms that are in use. As we can see in the picture above, there is some Instagram story labelled ‘Discord’, which showed two relevant pictures:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050306.png" alt="" /><img src="/assets/images/tisc-2024/Pasted image 20240930050312.png" alt="" /></p>
+
+<p>Based on the photos above we can deduce the following:</p>
+<ul>
+  <li>There is a presence of a Discord bot that we need to communicate with (which means that we will need a Discord server in this case)</li>
+  <li>To interact with the Discord bot, users of the Discord server will have to be granted with the D0PP3L64N63R role.</li>
+</ul>
+
+<p>Setting a Discord server is pretty easy using the Discord UI, but in order to add a Discord bot to the server, we’ll first need to craft out the Discord Bot invite link (luckily for us we can craft out as the Bot ID was provided to us, along with the following resource reference below):</p>
+<ul>
+  <li>https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930052328.png" alt="" /></p>
+
+<p>In addition, we need to create the D0PP3L64N63R role within the Discord server to allow us to interact with the Discord Bot (maybe we might not need it perhaps, but just create it for now):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050527.png" alt="" /></p>
+
+<p>After adding the Discord Bot to the Discord server, send the following message to any text channel within the Discord server:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>!help
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050536.png" alt="" /></p>
+
+<p>At first it was only two commands, however after assigning the user with the D0PP3L64N63R role and typing the command once again:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050545.png" alt="" /></p>
+
+<p>Especially for people like me, the <code class="language-plaintext highlighter-rouge">list</code> command looks very enticing:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050552.png" alt="" /></p>
+
+<p>After going through the files, the Update_030624.eml file was that one document that deemed to be the ‘most interesting one’:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050838.png" alt="" /></p>
+
+<p>Opening the .eml file using Outlook and the following email message was displayed:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050904.png" alt="" /></p>
+
+<p>There are two parts to this email that requires further investigation:</p>
+<ul>
+  <li>The 3 IDs provided (based on the email it has to do something with ‘Uber’s cutting-edge geospatial technology’)</li>
+  <li>There is a ‘secure communication channel’ located in https://www.linkedin.com/company/the-book-lighthouse</li>
+</ul>
+
+<p>For the 3 IDs provided, those are apparently map coordinates using the H3 global grid system (https://h3geo.org/), developed by Uber for optimization purposes of providing Uber services more effectively and efficiently for their users. Each ID corresponds to the following:</p>
+<ul>
+  <li>Resolution</li>
+  <li>Latitude</li>
+  <li>Longitude</li>
+  <li>Base Cell</li>
+  <li>etc.</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930052903.png" alt="" /></p>
+
+<p>Since we are mainly interested on map points, we are more interested in the Latitude and Longitude of the 3 IDs provided:</p>
+<ul>
+  <li>8c1e806a3ca19ff =&gt; 41.544426767, 12.994242633</li>
+  <li>8c1e806a3c125ff =&gt; 41.544551463, 12.994414040</li>
+  <li>8c1e806a3ca1bff =&gt; 41.544383254, 12.994469395</li>
+</ul>
+
+<p>Calculating the midpoint of the 3 map coordinates above just involves two calculations:</p>
+<ul>
+  <li>Midpoint Latitude = Average of the 3 Latitude Values = 41.544453828</li>
+  <li>Midpoint Longitude = Average of the 3 Longitude Values = 12.994375356</li>
+</ul>
+
+<p>Entering the midpoint map coordinates in Google Maps brings us to some place in Italy:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050958.png" alt="" /></p>
+
+<p>Now as for discovering the ‘secret communication channel’, looking through the LinkedIn pages brings us to a Telegram Bot called ‘TBL_DictioNaryBot’, in which we can easily communicate with using a valid Telegram account (used my personal one):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930051327.png" alt="" /></p>
+
+<p>After multiple tries, it turns out that the answer to send to the Telegram bot was the location name ‘Quercia secolare’, as the email did state that the person was close to the midpoint -_-“</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930050950.png" alt="" /></p>
+
+<p>And VOILA! The flag presents itself: TISC{OS1N7_Cyb3r_InV35t1g4t0r_uAhf3n}</p>
+
+<h1 id="thoughts">Thoughts</h1>
+
+<p>Quite frankly I am not really a big fan of OSINT CTF challenges, but i guess given that this is the first challenge and more of a warmup round, I guess you could say that I find some form of joy doing this challenge.</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

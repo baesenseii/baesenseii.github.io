@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSIT TISC 2024 CTF Challenge 5 - Hardware isn't that Hard!</title>
+  <meta name="description" content="To be frank, for this challenge, I had like A LOT OF ADVICE from many of my buddies in terms of how to approach this challenge as this 
+HUGE CREDIT TO MAH BU...">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>CSIT TISC 2024 CTF Challenge 5 - Hardware isn't that Hard!</h1>
+    <div class="post-meta">
+      <span class="post-date">October 18, 2024</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">ctf</span>
+        
+          <span class="category">tisc2024</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>To be frank, for this challenge, I had like A LOT OF ADVICE from many of my buddies in terms of how to approach this challenge as this 
+HUGE CREDIT TO MAH BUDDY THAT I MANAGED TO PULL INTO THIS HELLHOLE cExplr for this TISC challenge (I seriously wouldn’t have be able to do this without him man, and I learnt the MOST out of it).</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055143.png" alt="" /></p>
+
+<p>Solving the challenge involves 3 parts:</p>
+<ul>
+  <li>Reverse Engineering of the flash dump</li>
+  <li>Reverse Engineering of I2C communication with the implant</li>
+  <li>Putting the puzzle together and getting the goddamn flag
+    <h1 id="re-of-flash-dump">RE of Flash Dump</h1>
+  </li>
+</ul>
+
+<p>Challenge starts off by providing a dump file of the i2c implant (command syntax used for dumping the image was via esptool, which meant that the dump we’re dealing with had something to do with ESP32). I tried out many ESP32 tools on GitHub, but the one that had the most success of carving out the various partitions is this tool:</p>
+
+<p><a href="https://github.com/BlackVS/esp32knife" title="https://github.com/BlackVS/esp32knife">https://github.com/BlackVS/esp32knife</a></p>
+
+<p>An interesting output was an ELF file, which was loaded onto mah fav disassembler Ghidra, and that’s when I knew, idk wtf I was doing. It took me a while to find out what I was reading using the various strings from the dram0.data segment (there was a fake flag and some other strings):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017232832.png" alt="" /></p>
+
+<p>But apart from that, meh, kinda hit a rock wall via this approach. Let’s try interacting with the network service I2C comms.</p>
+<h2 id="re-of-i2c-communications">RE of I2C Communications</h2>
+
+<p>An attempt was made to connect to chals.tisc24.ctf.sg via 61622 and saw a very nice ASCII diagram that indicates I2C.</p>
+<ul>
+  <li>there are 3 commands: SEND, RECV, EXIT.</li>
+  <li>after painstakingly reading so about i2c comms, there are two things that we need to find out: what addressing scheme is it using, and what is the slave address of the i2c implant.</li>
+  <li>thanks to the example written for the SEND command, we can establish that it is using a 7-bit addressing scheme (MSB contains 7-bit address value + 1-bit to determine write (0) or read (1) operation)</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017233808.png" alt="" />
+After numerous automated trial and errors on the data, an amazing breakthrough appeared when the following sequence of data was sent:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SEND D2 46 
+SEND D3 
+RECV 20
+</code></pre></div></div>
+
+<p>Surprisingly, the returned bytes were NOT ZEROES. And it did make sense on the order of the commands given. Here’s a quick breakdown of what happened:</p>
+<ul>
+  <li>For the first command, payload 46 was written to address 0x69 (SEND D2 46) on the I2C bus</li>
+  <li>A read condition was also sent to the I2C bus so that we can read off the bytes from the same I2C bus via our buffer</li>
+  <li>The RECV command reads the bytes off the buffer (which in this case prints out some weird bytes that are finally NOT ZERO)</li>
+</ul>
+
+<p>And it turns out that we’ve accidentally found the slave address too, hurray for that! Now we gotta try to make sense of what we have between the disassembled code and the behavior we observed.</p>
+<h2 id="back-to-the-app"><strong>Back to the app</strong></h2>
+
+<ul>
+  <li>Now that we know how to talk to the app, it’s time to figure out what caused the output.</li>
+  <li>After going through the disassembled ESP32 code, a particular function of interest was discovered @ FUN_400d1614 that was spitting output.</li>
+  <li>realised that using the 3 commands above, sending the payload 4D results in the CrapTPM banner to be displayed, whereas payload 46 results in an “encrypted” form of the flag.</li>
+  <li>the encryption involves a byte-level XOR encryption as seen in the disassembled code, or what seems to be some form of a custom rolling XOR encryption (as seen in the function):</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241021214409.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241017234015.png" alt="" /></p>
+
+<p>The “custom_rolling_xor” function utilises a global ‘key’ variable that aids in the XOR encryption process.
+What makes it even more interesting is that even though the key is an unsigned short variable (16-bit, 2 bytes), only the lower 8 bits of the key was used as the resulting value was a byte worth (8-bit).</p>
+
+<p>As it is common knowledge for this CTF that the first 5 characters of the flag start with ‘TISC{‘, we could do a sample XOR operation with the encrypted value for each character, however due to the bit shifts on an unsigned short variable during the key generation, reversing it back will not be possible due to possible data loss.</p>
+
+<p>So this was the approach taken to obtain the flag:</p>
+
+<p>1) The first XOR operation was performed between the 1st byte of the encrypted value (from the I2C bus) and the letter “T”. This is to obtain the first half (first 8-bits) of the global xor key (which is originally 16-bits).</p>
+
+<p>In context, the design of the global XOR key is as follows:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>-first_half-</td>
+      <td>-second_half-</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>2) A brute force attack is performed to guess the second half (second 8-bits) of the global xor key. To verify if the value is correct, we have do another XOR operation with letter “I” and the 2nd byte of the encrypted value (from the I2C bus)
+3) Once the second half is guessed, the second half gets moved to the first half of the global XOR key, leaving the second half again for guessing.
+4) Steps 2 and 3 are then repeated again with the following pairs:</p>
+<ul>
+  <li>“S” and 3rd byte of ciphertext</li>
+  <li>“C” and 4th byte of ciphertext</li>
+  <li>”{“ and 5th byte of ciphertext.</li>
+</ul>
+
+<p>For subsequent bytes (after the “{“), we noticed that bruteforce attacks of the second half of the global XOR key is based on the <strong>FIRST</strong> instance of the bruteforce result to generate the subsequent ciphertext values.</p>
+
+<p>So with this pattern guessing method in mind, the key was then discovered for each byte. From there, just simply decrypt the ciphertext from the I2C bus with the actual key and you get the flag:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054335.png" alt="" /></p>
+
+<p>Script used is as follows below (note that this script uses recursive functions to obtain the key):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># key is global and will be reused
+</span>
+<span class="c1">#!/usr/bin/python3
+</span>
+<span class="k">def</span> <span class="nf">custom_rolling</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">key</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="p">(</span><span class="n">key</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span> <span class="o">^</span> <span class="n">key</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>
+    <span class="n">temp</span> <span class="o">=</span><span class="p">(</span><span class="n">temp</span> <span class="o">&gt;&gt;</span> <span class="mi">9</span> <span class="o">^</span> <span class="n">temp</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>  
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="o">^</span> <span class="n">temp</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>
+
+    <span class="k">return</span> <span class="n">key</span>
+
+<span class="c1"># for i in range(0xff):
+#     check = []
+#     key = 0x4f
+#     key = (i&lt;&lt;8)|key
+#     temp_key = key
+</span>
+<span class="c1">#     custom_rolling()
+#     if (key&amp;0xff) == 0xaa:
+#         print("key : ", hex(temp_key))
+#         print("FOUND")
+</span>
+<span class="c1">#after 1 round of rolling
+</span><span class="n">key</span> <span class="o">=</span> <span class="mh">0x6d4f</span>
+
+<span class="n">possible_key</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x6d4f</span><span class="p">]</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">custom_rolling</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\n</span><span class="s">New key : </span><span class="sh">"</span><span class="p">,</span> <span class="nf">hex</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="n">possible_key</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">possible_key</span><span class="p">))</span>
+
+<span class="n">TPM_val</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x1b</span><span class="p">,</span><span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0xdd</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0x9c</span><span class="p">,</span> <span class="mh">0xa8</span><span class="p">,</span> <span class="mh">0x0a</span><span class="p">,</span> <span class="mh">0x07</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0xad</span><span class="p">,</span> <span class="mh">0xf4</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">,</span> <span class="mh">0x31</span><span class="p">,</span> <span class="mh">0xe8</span><span class="p">]</span>
+
+<span class="n">flag</span> <span class="o">=</span> <span class="sh">""</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">possible_key</span><span class="p">)):</span>
+    <span class="n">flag</span> <span class="o">+=</span> <span class="nf">chr</span><span class="p">(</span><span class="n">TPM_val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="n">possible_key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">))</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Flag: TISC{hwfuninnit}</p>
+<h1 id="thoughts">Thoughts</h1>
+<p>Not going to lie but i was initially lost in this, but it took me a considerable amount of time to understand not only the Ghidra output but also the bit shifts (both left and right) that really threw me off many times. But thankfully with some guidance, i was able to do it, and i totally learnt alot from this!</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

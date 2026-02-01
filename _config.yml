@@ -1,0 +1,59 @@
+# Site settings
+title: "baesenseii@cyber"
+description: "Offensive Security & Infrastructure Automation"
+author: "baesenseii"
+url: "http://localhost:4000"  # Update this to your production domain
+baseurl: ""
+
+# Social links (update with your handles)
+github_username: baesenseii
+twitter_username: baesenseii
+linkedin_username: baesenseii
+
+# Build settings
+markdown: kramdown
+permalink: /posts/:title/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Kramdown settings
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+
+# Collections - Enable folder-based posts
+collections:
+  posts:
+    output: true
+    permalink: /posts/:title/
+
+# Allow posts to have their own folders with assets
+defaults:
+  - scope:
+      path: "_posts"
+      type: "posts"
+    values:
+      layout: "post"
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
+  - Dockerfile
+  - docker-compose.yml
+  - docker-compose-custom.yml
+  - DOCKER_TROUBLESHOOTING.md
+  - .gitignore
+  - .git/

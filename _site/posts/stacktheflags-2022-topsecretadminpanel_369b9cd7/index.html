@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GovTech Stack the Flags CTF 2022 - Top Secret Admin Panel</title>
+  <meta name="description" content="The challenge starts by providing us with a APK file, in which I immediately installed it onto my Genymotion Android VM Emulator (just use the free edition w...">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>GovTech Stack the Flags CTF 2022 - Top Secret Admin Panel</h1>
+    <div class="post-meta">
+      <span class="post-date">December 10, 2022</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">ctf</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>The challenge starts by providing us with a APK file, in which I immediately installed it onto my Genymotion Android VM Emulator (just use the free edition will do) with the adb tool. Upon loading the app, it presents itself with a login interface, prompting me to key in the username and password:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo1.png" alt="" /></p>
+
+<p>Next, as part of my mobile app testing framework, I will decompile the mobile app using two tools:</p>
+<ul>
+  <li>apktool (android decompilation to smali code)</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apktool d challenge.apk
+</code></pre></div></div>
+
+<ul>
+  <li>jadx (decompile to smali code and map it to Java code)</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>jadx <span class="nt">-d</span> <span class="si">$(</span>PWD<span class="si">)</span>/jadx-output challenge.apk
+</code></pre></div></div>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo3.png" alt="" /></p>
+
+<p>I’d like to take this opportunity to say something to the challenge developer:</p>
+
+<p>Thank you for NOT obfuscating the APK file.</p>
+
+<p>It was honestly brutal when I had to go through obfuscated apps over my years as a security consultant.</p>
+
+<p>As we were presented with a login page, the first instinctive thing to do is to figure out the login functionality and how it works. A quick grep of the login keyword within the jadx output and it directs the user to this file (put filename here):</p>
+
+<p><img src="assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo4.png" alt="" /></p>
+
+<p>First thing that came up to my mind was: “what the hell is Amplify”? A quick Google search and what I got was this:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo17.png" alt="" /></p>
+
+<p>OOOOOOO~~~ So it’s actually a backend framework for mobile/web applications, and it’s powered by Amazon Web Services. :D</p>
+
+<p>Not gonna lie, ever since I left consultancy and went to teaching, I have never come across mobile apps that leverage on AWS Identity Access Management as the backbone of user authentication. So this would definitely be a first time for me.</p>
+
+<p>The login mechanism relies heavily on AWS, and this can be seen by the captured web traffic via Burp Suite when attempting to log in with bogus credentials:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo6.png" alt="" /></p>
+
+<p>From here it was pretty much a dead end when I can’t proceed past this login page without valid credentials. All hope was lost, until I saw this within the Android XML resource files:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo7.png" alt="" /></p>
+
+<p>Wait, seriously? -_-“</p>
+
+<p>Normally resources within the strings.xml file contain text values that are eventually used as part of the Android application. But this, is <strong>HIGHLY</strong> unusual. Wonder if it works…</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo8.png" alt="" /></p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo16.png" alt="" /></p>
+
+<p>YA KNOW? A classic case of a typical mistake done by developers to clear out previous user credentials :)</p>
+
+<p>Now after logging in, the hint provided was a really obvious one. 3 repetitions to the letter S, and in addition to that, we also have prior knowledge that the mobile app utilises the AWS infrastructure. SOOO…. Amazon + 3 ‘S’ characters = Amazon S3?</p>
+
+<p>Anyway, for us to access any authenticated S3 storage buckets, we would need these information:</p>
+<ul>
+  <li>AWS Access ID</li>
+  <li>AWS Access Secret Key</li>
+  <li>AWS Region</li>
+</ul>
+
+<p>If we look at our Burp Proxy traffic, the following HTTP response was received when we successfully logged into the mobile application:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo9.png" alt="" /></p>
+
+<p>All you need now is to use the AWS S3 CLI (if you’re on Linux, setting this up is easy as hell) by following these steps:</p>
+
+<p>1) Install AWS CLI (Check this website for more info: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+2) Configure an AWS CLI profile with the access ID, key/token and region (I created a separate profile as I too have other AWS keys to manage):</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws <span class="nt">--profile</span> stf22 configure
+</code></pre></div></div>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo10.png" alt="" /></p>
+
+<p>3) if all configurations are correct and well, run the following command and you should be able to see multiple S3 buckets:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws <span class="nt">--profile</span> stf22 s3 <span class="nb">ls</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo11.png" alt="" /></p>
+
+<p>HMMMM. Seems like it’s not working T_T. After reading the documentation, it turns out that i also need to include the AWS session token as well. For this you will need to find the ‘credentials’ file and add it yourself:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo12.png" alt="" /></p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo13.png" alt="" /></p>
+
+<p>After further analysis of listing the buckets, only one contained the flag.</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo14.png" alt="" /></p>
+
+<p>Fetching the flag was relatively easy:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws s3 <span class="nt">--profile</span> stf22 <span class="nb">cp </span>s3://stfflag2/flag2.txt flag2.txt
+</code></pre></div></div>
+
+<p>Simply view the contents of the file and voila, you have the flag:</p>
+
+<p><img src="/assets/images/2022-12-10-stacktheflags-2022-topsecretadminpanel/photo15.png" alt="" /></p>
+<h1 id="thoughts">Thoughts</h1>
+
+<p>I can totally understand how this challenge is considered to be “easy”, provided that you know about these two concepts:</p>
+<ul>
+  <li>Android App Analysis (Static and Dynamic)</li>
+  <li>Familiarisation with Amazon Web Services and its various cloud services (AWS IAM, S3)</li>
+</ul>
+
+<p>I was expecting this challenge to have some form of Dynamic Binary Instrumentation (DBI) stuff like using Frida to perform method overriding, but I guess sometimes the best way to solve it is when the solution is simple and straightforward. No need to be so fancy.</p>
+
+<p>I guess the only thing I can brag about this challenge is that my group was the one that got first blood, but i didn’t take photo evidence of it. UGH!</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

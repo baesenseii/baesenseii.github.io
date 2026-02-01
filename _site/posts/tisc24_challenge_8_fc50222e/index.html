@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSIT TISC 2024 CTF Challenge 8 - Wallfacer</title>
+  <meta name="description" content="Alright here we go, the most painful and yet rewarding challenge throughout the TISC CTF 2024 that made me so humbled and curious to learn more about Android...">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>CSIT TISC 2024 CTF Challenge 8 - Wallfacer</h1>
+    <div class="post-meta">
+      <span class="post-date">October 21, 2024</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">ctf</span>
+        
+          <span class="category">tisc2024</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>Alright here we go, the most painful and yet rewarding challenge throughout the TISC CTF 2024 that made me so humbled and curious to learn more about Android mobile exploitation.</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055803.png" alt="" /></p>
+
+<h1 id="just-playing-around">Just playing around…</h1>
+
+<p>After installing the mobile application using Genymotion, this is what I was presented with upon loading:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241126105656.png" alt="" /></p>
+
+<p>Initial analysis of the mobile application did not seem to have any events triggered based on submitted inputs (based on what was shown in the MainActivity.java app):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241126110138.png" alt="" /></p>
+
+<p>Next thing to do is to look at the AndroidManifest.xml file to see if there are any exported Android activities, and turns out there are two:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+        <span class="nt">&lt;activity</span>
+            <span class="na">android:name=</span><span class="s">"com.wall.facer.query"</span>
+            <span class="na">android:exported=</span><span class="s">"true"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;activity</span>
+            <span class="na">android:name=</span><span class="s">"com.wall.facer.MainActivity"</span>
+            <span class="na">android:exported=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;intent-filter&gt;</span>
+                <span class="nt">&lt;action</span> <span class="na">android:name=</span><span class="s">"android.intent.action.MAIN"</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.LAUNCHER"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;/intent-filter&gt;</span>
+        <span class="nt">&lt;/activity&gt;</span>
+...
+
+</code></pre></div></div>
+
+<p>Launching the other exported activity can be done using ADB:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>am start -n com.wall.facer/com.wall.facer.query
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202012348.png" alt="" /></p>
+
+<p>But apart from that, there’s nothing much to do from there, welps. Guess I have to look through other resources.</p>
+<h1 id="part-i---the-hidden-dex">Part I - The Hidden Dex</h1>
+<p>After digging through thousands of lines of code, when going through the resources, I came across this weird string value called “filename” in the strings.xml file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201202448.png" alt="" /></p>
+
+<p>Just by doing a quick Base64 decode of that string reveals that there is a sqlite.db file:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>red@ops:~<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"c3FsaXRlLmRi"</span> | <span class="nb">base64</span> <span class="nt">-d</span>
+sqlite.db
+</code></pre></div></div>
+
+<p>After looking through the Android app assets folder, i did find the sqlite.db file however there seemed to be some form of error when loading it into the sqlite3 database viewer:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202000024.png" alt="" /></p>
+
+<p>HMMMM….STRANGE….</p>
+
+<p>Normally any values that are being stored in the strings.xml gets referenced in Android applications via an R.id value. In this case, grepping the ‘filename’ keyword resulted in discovering its R.id value of 0x7f0f0038:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201230154.png" alt="" /></p>
+
+<p>What’s even weirder about this is that attempting to search for that value based on the Java source code obtained via Jadx, nothing turned up:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201230504.png" alt="" /></p>
+
+<p>However, if we go through the Android smali bytecode, we discover that there is a file that contains that R.id value reference (K0.smali):</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201231036.png" alt="" /></p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241201231419.png" alt="" /></p>
+
+<p>If we look at line 106, there is a method invocation of the ClassLoader function (more info here: https://developer.android.com/reference/dalvik/system/InMemoryDexClassLoader), which loads Dex code that might have additional functionalities that are not included inside the app. And guess where the data for the ClassLoader file is from? Yep you guessed it, our suspicious sqlite.db file.</p>
+
+<p>Another interesting item that i noticed is in line 102 of K0.smali, which is the invocation of the LA8.K() function:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202002027.png" alt="" /></p>
+
+<p>After painstakingly figuring out what this function is about, I finally managed to discover here:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202002357.png" alt="" /></p>
+
+<p>After following through the code, we do know that apparently this function is the one responsible for passing data to the earlier mentioned ClassLoader function. Tracing the code further results in line 259 of the code above to contain the apparent Dex code from the sqlite.db file.</p>
+
+<p>With the mighty power of Frida, I quickly whipped up a Frida script that can extract the data from that function (as the data taken in by the function is in bytes, I used a Base64 encoder to encode the byte data and output it to the command line):</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Java</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">function</span><span class="o">()</span> <span class="o">{</span>
+
+<span class="c1">// get the bytebuffer data - which is the final output of the K function.</span>
+<span class="kt">var</span> <span class="n">className</span> <span class="o">=</span> <span class="s">"java.nio.ByteBuffer"</span><span class="o">;</span>
+<span class="kt">var</span> <span class="n">classInstance</span> <span class="o">=</span> <span class="nc">Java</span><span class="o">.</span><span class="na">use</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+
+<span class="n">classInstance</span><span class="o">.</span><span class="na">wrap</span><span class="o">.</span><span class="na">overload</span><span class="o">(</span><span class="s">"[B"</span><span class="o">).</span><span class="na">implementation</span> <span class="o">=</span> <span class="n">function</span><span class="o">(</span><span class="n">arg1</span><span class="o">)</span>
+<span class="o">{</span>
+    <span class="c1">// create a Base64 object first</span>
+    <span class="kt">var</span> <span class="n">b64_obj</span> <span class="o">=</span> <span class="nc">Java</span><span class="o">.</span><span class="na">use</span><span class="o">(</span><span class="s">"android.util.Base64"</span><span class="o">).</span><span class="n">$new</span><span class="o">();</span>
+    <span class="n">console</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="n">b64_obj</span><span class="o">.</span><span class="na">encodeToString</span><span class="o">(</span><span class="n">arg1</span><span class="o">,</span><span class="mi">2</span><span class="o">));</span>
+
+    
+    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">wrap</span><span class="o">(</span><span class="n">arg1</span><span class="o">);</span>
+<span class="o">};</span>
+
+<span class="o">});</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005124.png" alt="" /></p>
+
+<p>Decoded the printed string from Frida and pushed it into a file, and voila whaddya know, we got a dex file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005225.png" alt="" /></p>
+
+<p>First thing to do is to run jadx on the .dex file, however errors keep popping up. After doing a quick Google search, the cause for the error is the checksum verification that jadx performs by default. So in this case, the command was slightly modified to turn off checksum verification:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/jadx/bin/jadx fixed.dex -Pdex-input.verify-checksum=no
+</code></pre></div></div>
+
+<p>And whaddya know…</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005434.png" alt="" /></p>
+<h1 id="part-ii---getting-to-know-my-walls">Part II - Getting to know my walls</h1>
+
+<p>Based on the Java translated source code obtained from the Dex file, we found two items of interest here n DynamicClass.java:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202005712.png" alt="" /></p>
+
+<ul>
+  <li>A NativeLibrary file is dynamically generated, but before that there is a pollForTombMessage() function that triggers the generateNativeLibrary() function once the polling is done.</li>
+  <li>After the native library is loaded, there is a function called pollForAdvanceMessage() that will trigger the nativeMethod() function once the polling is done –&gt; chances are that this is from the NativeLibrary file.</li>
+  <li>ADB Logcat messages are tagged with a TAG value, which in this case turned out to be “TISC”.</li>
+</ul>
+
+<p>Within the same Java file, this is the implementation of both the pollForTombMessage() and pollForAdvanceMessage() functions:</p>
+
+<p><strong>pollForTombMessage()</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">pollForTombMessage</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">ClassNotFoundException</span><span class="o">,</span> <span class="nc">NoSuchMethodException</span><span class="o">,</span> <span class="nc">InvocationTargetException</span><span class="o">,</span> <span class="nc">IllegalAccessException</span> <span class="o">{</span>
+        <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">cls</span><span class="o">;</span>
+        <span class="k">do</span> <span class="o">{</span>
+            <span class="nc">SystemClock</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.wall.facer.Storage"</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">while</span> <span class="o">(!</span><span class="nc">DynamicClass</span><span class="err">$</span><span class="n">$ExternalSyntheticBackport1</span><span class="o">.</span><span class="na">m</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getMessage"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getInstance"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="s">"I am a tomb"</span><span class="o">));</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p><strong>pollForAdvanceMessage()</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">pollForAdvanceMessage</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">ClassNotFoundException</span><span class="o">,</span> <span class="nc">NoSuchMethodException</span><span class="o">,</span> <span class="nc">InvocationTargetException</span><span class="o">,</span> <span class="nc">IllegalAccessException</span> <span class="o">{</span>
+        <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">cls</span><span class="o">;</span>
+        <span class="k">do</span> <span class="o">{</span>
+            <span class="nc">SystemClock</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.wall.facer.Storage"</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">while</span> <span class="o">(!</span><span class="nc">DynamicClass</span><span class="err">$</span><span class="n">$ExternalSyntheticBackport1</span><span class="o">.</span><span class="na">m</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getMessage"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="n">cls</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">"getInstance"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="k">new</span> <span class="nc">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]),</span> <span class="s">"Only Advance"</span><span class="o">));</span>
+    <span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>To obtain the NativeLibrary file, you will just need to do the following:</p>
+<ul>
+  <li>Load up the following Frida script to stop the NativeLibrary file from getting deleted after it is generated (logic of script below is just to return the exists() function to be 0 instead of a 1):</li>
+</ul>
+
+<p><strong>Command to run</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frida -U -f com.wall.facer -l nodelete.js
+</code></pre></div></div>
+
+<p><strong>Frida Script called (nodelete.js for this example)</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Java.perform(function() {
+
+// get the bytebuffer data - which is the final output of the K function.
+var className = "java.io.File";
+var classInstance = Java.use(className);
+
+classInstance.exists.implementation = function()
+{
+    console.log("delete stopped");
+        return 0;
+}
+
+});
+
+</code></pre></div></div>
+
+<ul>
+  <li>Type the words “I am a tomb” and press submit.</li>
+</ul>
+
+<p>You can use ADB to navigate to the application data folder directory (/data/data/com.wall.facer) and view the ‘files’ folder here to see the libnative.so file:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202021440.png" alt="" /></p>
+
+<p>Once done, launch Terminal and type in the following command to download it into your system:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adb pull /data/data/com.facer.wall/files/libnative.so .
+</code></pre></div></div>
+
+<p>Now typing the following text ‘Only Advance’ triggers another set of log messages that are basically from the NativeMethod() function, which is eventually from the libnative.so library:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202021657.png" alt="" /></p>
+
+<p>Guess now we know that there are three walls that we need to overcome.</p>
+<h1 id="part-iii---overcoming-the-walls">Part III - Overcoming the walls</h1>
+
+<p>Now I would love to do a deep-dive analysis on the shared library, but truth be told, I think i might have delayed this writeup for too long, so much so that there are other people out there that did an AMAZING job in the writeup.</p>
+
+<p>Before proceeding to this part, kindly read up this section of his writeup regarding the deep-dive analysis of the NativeMethod() function here: <a href="https://blog.0wl.sg/Posts/2024/October/20241021000000---BLG---TISC-2024-Challenge-8-(Wallfacer)-Writeup#analyzing-nativemethod-from-libnativeso">Challenge 8 Wallfacer Writeup - analyzing nativemethod from libnativeso</a></p>
+
+<p>Once you are done with reading above, in that case I will only be focusing on the final solution, which is a memory patching technique using Frida. The following steps were taken:</p>
+
+<h2 id="final-frida-script-code">Final Frida Script Code</h2>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">baseAddr</span> <span class="o">=</span> <span class="nx">Module</span><span class="p">.</span><span class="nf">findBaseAddress</span><span class="p">(</span><span class="dl">"</span><span class="s2">libnative.so</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Base Address: </span><span class="dl">"</span><span class="o">+</span><span class="nx">baseAddr</span><span class="p">);</span>
+
+<span class="c1">// knocking down wall 1</span>
+<span class="kd">var</span> <span class="nx">pc0</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x5ab0</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc0</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="dl">'</span><span class="s1">rw-</span><span class="dl">'</span><span class="p">));</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc0</span><span class="p">,[</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x62</span> <span class="p">]);</span> <span class="c1">//write to replacement string /data/local/cab (just created a sample file in the phone)</span>
+<span class="c1">// this is to also preserve the same number of bytes</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL1] Replacing '/sys/wall/facer' to '/data/local/cab'..</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="c1">// for patching instruction to knock down wall 2</span>
+<span class="kd">var</span> <span class="nx">pc1</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x1f78</span><span class="p">));</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc1</span><span class="p">,[</span><span class="mh">0xbf</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL2] Patching instruction at offset 0x1f78...</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="c1">//Knocking down of Wall 3</span>
+<span class="c1">//2a looks good =&gt; removed the "i'm afraid i'm going to have to stop you from getting the correct key and IV"</span>
+<span class="kd">var</span> <span class="nx">pc2a</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x231a</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL3A] Patching instruction at offset 0x231a...</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc2a</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc2a</span><span class="p">,[</span><span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span><span class="mh">0x0</span><span class="p">,</span><span class="mh">0x0</span><span class="p">]);</span>
+
+<span class="c1">//2b looks good =&gt; this is to patch the other switch case that uses 0xa13 instead of the usual 0x539 for others</span>
+
+<span class="kd">var</span> <span class="nx">pc2b</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NativePointer</span><span class="p">(</span><span class="nx">baseAddr</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="mh">0x3746</span><span class="p">));</span>
+<span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">[WALL3B] Patching instruction at offset 0x3746...</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">protect</span><span class="p">(</span><span class="nx">pc2b</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="dl">'</span><span class="s1">rwx</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">Memory</span><span class="p">.</span><span class="nf">writeByteArray</span><span class="p">(</span><span class="nx">pc2b</span><span class="p">,[</span><span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span><span class="mh">0x0</span><span class="p">,</span><span class="mh">0x0</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<h2 id="steps-to-take">Steps to Take</h2>
+<ul>
+  <li>Save script into a file</li>
+  <li>Run the following Frida syntax:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frida -U -f com.wall.facer -l script.js
+</code></pre></div></div>
+
+<p>Now take note that the following error will be shown:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022634.png" alt="" /></p>
+
+<p>This is because of the NativeLibrary not being loaded when the app is not presented with the words ‘I am a tomb’.</p>
+
+<ul>
+  <li>
+    <p>Type in the text “I am a tomb” in the application and click ‘submit’ (adb logcat logs will show that the native library is loaded).</p>
+  </li>
+  <li>
+    <p>Open your script.js in a notepad and just click ‘save’. Frida assumes that there are changes made if there’s a file operation, which will refresh the script again (this time it should work as by now the library has already loaded)</p>
+  </li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022812.png" alt="" /></p>
+
+<ul>
+  <li>Once done, go to the app and type ‘Only Advance’, Frida will handle the necessary hooks and overwrites, and you should be presented with the correct key and IV</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202022907.png" alt="" /></p>
+
+<ul>
+  <li>Launch the exported Android Activity that is expecting a Key-IV pair input and enter the values based on what you see at the Android logcat console:</li>
+</ul>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241202023035.png" alt="" /></p>
+
+<p>Final flag: TISC{1<em>4m_y0ur_w4llbr34k3r</em>!i#Leb}</p>
+<h1 id="thoughts">Thoughts</h1>
+<p>In my honest opinion, this was the ONE AND ONLY CHALLENGE THAT I GOT HUMBLED BY. Truth be told, previous CTFs that involved Mobile Application challenges were pretty boring because of the fact that it mainly involves static analysis (e.g decompilation of Android app, look look see see, and done).</p>
+
+<p>I think there were some attempts of mobile app CTF challenges in the past that used Frida, but this challenge is really, REALLY annoying indeed. HUGE respect to the challenge creator as well on building this, WELL PLAYED :)</p>
+
+<p>I think after this, my level of knowledge of Frida kind of grew tenfold and I would LOVE to try out other mobile app challenges just like this! Looking forward to more :))</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

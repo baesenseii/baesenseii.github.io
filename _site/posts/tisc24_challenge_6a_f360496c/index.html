@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSIT TISC 2024 CTF Challenge 6a - Meownitoring</title>
+  <meta name="description" content="Well based on the description alone it seems that there are two parts to this CTF and we are to look through tons of logs (based on the provided ZIP file, UG...">
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <article class="post-content">
+  <header class="post-header">
+    <h1>CSIT TISC 2024 CTF Challenge 6a - Meownitoring</h1>
+    <div class="post-meta">
+      <span class="post-date">October 19, 2024</span>
+      
+      <span class="post-categories">
+        
+          <span class="category">ctf</span>
+        
+          <span class="category">tisc2024</span>
+        
+      </span>
+      
+    </div>
+  </header>
+  
+  <div class="post-body">
+    <p>Well based on the description alone it seems that there are two parts to this CTF and we are to look through tons of logs (based on the provided ZIP file, UGHHHH).</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055210.png" alt="" /></p>
+
+<h1 id="getting-flag-1">Getting Flag 1</h1>
+
+<p>After unzipping the file, the following information was displayed in notes.md:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Workplan
+Setup monitoring and logs analysis process for PALINDROME. 
+Compare products (we have 1 beta testing rights, need to source for others)
+
+## Product 1: Meownitoring (Beta Test)
+`https://d231g4hz442ywp.cloudfront.net`
+
+1. Any sensitive info in logs / monitoring? 
+2. How secure is the setup?
+3. Usefulness of dashboard? Buggy? 
+</code></pre></div></div>
+
+<p>Apprently, the Meownitoring web application is simply an interface to link AWS CloudTrail logs based on an AWS IAM user for a much more presentable dashboard (well it beats the hell out of sieving through tons of JSON data). To configure a user to access its CloudTrail logs, the user has to:</p>
+<ul>
+  <li>Register for a new account (signup is hassle-free, and free at the same time.).</li>
+  <li>Configure the ARN of an AWS IAM user.</li>
+</ul>
+
+<p>After going through the AWS CloudTrail logs, it seems that the user of interest is this particular IAM user (with its ARN):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arn:aws:iam::637423240666:user/dev
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054728.png" alt="" /></p>
+
+<p>After loading this ARN value to the Meownitoring website, the app fails. However after close inspection of the HTTP traffic, there is a request to the URI ‘/download’ to retrieve a ZIP file:</p>
+
+<p>https://loggingbucket20174jawws.s3.amazonaws.com/637423240666.zip?AWSAccessKeyId=ASIAXYKJQ7ESIXHMAIZD&amp;Signature=ulfPSJ4CsUopFF8hkT4KCURWpX4%3D&amp;x-amz-security-token=IQoJb3JpZ2luX2VjED4aDmFwLXNvdXRoZWFzdC0xIkgwRgIhAO4uyWH1gX8g8i8AMw6P%2Bgevn4VoHc7waS%2BI78Z%2BKpyiAiEAym22TWPHeQsSZa0GGSWXkhCsGiEkxwHe%2BQ2fZUmT4qsq6QIIdxAAGgw1MzMyNjcwMjAwNjgiDMf4lrrxSkr4SdHAcSrGAlTpsGD06vcLG0fdmjUZ5KnNk5UOpm56hvrrv6ScjIdN2VVH4Mf6cfJ2bhRwbfS7zXOtnQ%2FbAfUDle9FgLxSOweatwcbtPrLCjokyPdz%2FGkd1X778P74dheGQ5IavzzFXcAB46VwNUnANXS4xsWpsQkd%2FxpnE5IXj9zH%2F6xydPI%2FVEZbKMdYz4jAl5lV23Q2zJbAmzavH7RPVRZRTFvPHPoJyWI2uM5z7yi0qhNmOiF8u5i8%2Fs1VWSpg%2FMe5B3Q2roYCnq4riCihxiRO3OrObZZMTKwBANvDt7A016pMSWmE7n5P%2B2enr%2BN%2FBsjg0ApWO9qtyaSfm%2BBGalF%2F5yYyHBpwM%2BhILtguJdBM78Tgrep3HmtijP6z%2BvQK%2FSeMyVbkcVHGX1xpMlpGEw2PrQy0T8kXhDg66qjpYUAnGZW1B6jAmsnBcSA0MI%2BCtrcGOp0B3DnlX%2FlB2SboOH7n80UGERZ8QpX2qACcHXxOgwvuhHn%2Fm6hh5QA%2FcURpyQScYyzQzIkGSfAC%2FFb5bczwI6v3NW6huHh32MfopRwq9YgM7EjpI8Di%2Bd0BlnfjbiEVUZxcrwSd4DsJ7aqbqFyRktFDLzWkskDoBmcWsLemagqalpFguqciyhZ3wm06EYIFZWzi1sVp3YUtP0tHHDEJjg%3D%3D&amp;Expires=1726842371</p>
+
+<p>Copy the URL into your web browser and you should be able to download the ZIP file. Unzip the ZIP file and you should get a series of other logs (more JSON GZ files, but this time from two different regions:</p>
+<ul>
+  <li>ap-southeast-1</li>
+  <li>us-east-1</li>
+</ul>
+
+<p>Go through the logs and you’ll notice another ARN for another AWS IAM user:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arn:aws:iam::637423240666:role/mewonitoring-lambda-test
+</code></pre></div></div>
+
+<p>Use the Meownitoring web application again to find this, and whaddya know, you’ll see logs ingested by the web application:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054737.png" alt="" /></p>
+
+<p>And also,  after reading through the logs, it was found that the AWS secret access key and AWS access key ID was shown clearly in the application: (debug aws_secret_access_key) is now in the clear. Using the newfound credentials, and after looking through the logs for possible S3 buckets, the following command was used (with the new credentials):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> aws s3 ls s3://meownitoringtmpbucket.s3.ap-southeast-1.amazonaws.com/
+</code></pre></div></div>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054756.png" alt="" /></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──(kali㉿kali)-[~/Desktop/Cloud/CGCRTS]
+└─$ cat flag1.txt
+
+
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⡷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⡿⠋⠈⠻⣮⣳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⡿⠋⠀⠀⠀⠀⠙⣿⣿⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣿⡿⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀⠈⠛⠛⠿⠿⣿⣷⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣾⡿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠻⠿⣿⣶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣀⣠⣤⣤⣀⡀⠀⠀⣀⣴⣿⡿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣄⠀⠀
+⢀⣤⣾⡿⠟⠛⠛⢿⣿⣶⣾⣿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣿⣷⣦⣀⣀⣤⣶⣿⡿⠿⢿⣿⡀⠀
+⣿⣿⠏⠀⢰⡆⠀⠀⠉⢿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠻⢿⡿⠟⠋⠁⠀⠀⢸⣿⠇⠀
+⣿⡟⠀⣀⠈⣀⡀⠒⠃⠀⠙⣿⡆⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠇⠀
+⣿⡇⠀⠛⢠⡋⢙⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⣿⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀
+⣿⣧⠀⠀⠀⠓⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠋⠀⠀⢸⣧⣤⣤⣶⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⡿⠀⠀
+⣿⣿⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠻⣷⣶⣶⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⠁⠀⠀
+⠈⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⡏⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⡄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠙⠛⠻⠿⢿⣿⣷⣶⣦⣤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⡄⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠛⠿⠿⣿⣷⣶⣶⣤⣤⣀⡀⠀⠀⠀⢀⣴⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⡿⣄
+                                   ⠀⠀⠉⠉⠛⠛⠿⠿⣿⣷⣶⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣹
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⢸⣧
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣆⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣶⣾⣿⣿⣿⣿⣤⣄⣀⡀⠀⠀⠀⣿
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⢿⣻⣷⣶⣾⣿⣿⡿⢯⣛⣛⡋⠁⠀⠀⠉⠙⠛⠛⠿⣿⣿⡷⣶⣿
+
+
+Here's a partial flag: TISC{m@ny_inf0_frOm_l0gs_
+</code></pre></div></div>
+
+<h1 id="getting-flag-2">Getting Flag 2</h1>
+
+<p>After getting the first flag, we are presented with even MORE notes (notes2.md), and MORE logs (UGHHH):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>└─$ cat notes2.md 
+Item 1: Known issue with logs
+Cloudtrail is not enabled prior to some deployments. However, it should have capture most events related to upcoming operations. 
+
+Evaluation of Product 1: Meownitoring (Beta Test) 
+Doesn't seem to be able to process large amount of logs
+TODO: read up on confused deputy problem.
+
+Item 2: Kill switch mechanism
+Kill switch was introduced after EXERCISE-0x74697363 where operators had to terminate the attack on multiple systems manually, which is ineffective and inefficient.
+
+Objective: 
+Develop a simple mechanism: upon invoke, terminates all attack
+Put platform on "sleep" state?
+Rotate the kill switch randomly (i.e., id, stage, route, method), except during designated freeze period.
+
+Upcoming platform freeze: 1 Sep - 30 Oct 2024 
+
+TODO: Rotate kill switch before freeze period.
+</code></pre></div></div>
+
+<p>Now, i tried to use the same approach to go through the JSON files and abusing the ‘grep’ command, but this ended up to be so freaking tiring. It seems quite nuts to be unzipping and sieving through tons of JSON log data, so that is when i found the ‘jq’ application (along with the ‘gunzip’ command to unzip the files).</p>
+
+<p>After experimenting through the commands, the following syntax was used to search for output events:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gunzip -c *.gz | jq '.Records[]
+</code></pre></div></div>
+
+<p>When reading through the various records, i noticed that there’s tons of activities related to Amazon Lambda API gateways (and they are of different sorts). So i modified the command above to identify the accessed Amazon Lambda API gateway endpoints (note that if you want to narrow down the logs, just run it within the ‘ap-southeast-1 2024/07/17’ folder ):</p>
+
+<p><code class="language-plaintext highlighter-rouge">gunzip -c *.gz | jq '.Records[] | select ((.eventSource == "apigateway.amazonaws.com") and (.responseElements != null))' | less</code></p>
+
+<p>So based from the output of this command, we managed to extract quite a number of API IDs:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930054944.png" alt="" /></p>
+
+<p>From this list, we crafted and narrowed down the possible Lambda API URLs:</p>
+
+<ul>
+  <li><a href="https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/" title="https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/">https://f7x7yzf9j2.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/" title="https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/">https://kv0g2hke5e.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/" title="https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/">https://s14dfgslg5.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+  <li><a href="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/" title="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/">https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/</a></li>
+</ul>
+
+<p>From there I just needed to perform a simple GET request using Burp for all these API endpoints, and whaddya know? Only one endpoint will still be accessible as it responds with “Not Found”:</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20240930055003.png" alt="" /></p>
+
+<p>So from here, we determine that we needed to work with this API: <a href="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/" title="https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/">https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/</a></p>
+
+<p>In terms of figuring out how to interact with the API, we’ll need to figure out how to communicate with the API gateway and thank you to AWS for the lovely documentation located here: https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-call-api.html</p>
+
+<p><img src="/assets/images/tisc-2024/Pasted image 20241103000828.png" alt="" /></p>
+
+<p>One of the requirements to invoke the REST API is to identify the stage name (as seen in the screenshot above). A quick look into the logs and we can find that the following request reveals the ‘stage name’:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> { 
+ "eventVersion": "1.09", 
+ "userIdentity": { 
+	 "type": "IAMUser", 
+	 "principalId": "AIDAZI2LCYXNLENAY2IQ3", 
+	 "arn": "arn:aws:iam::637423240666:user/dev", 
+	 "accountId": "637423240666", "accessKeyId": "AKIAZI2LCYXNH4OISNEW", "userName": "dev" }, 
+	 "eventTime": "2024-07-17T05:56:53Z", 
+	 "eventSource": "apigateway.amazonaws.com", 
+	 "eventName": "CreateStage", 
+	 "awsRegion": "ap-southeast-1", 
+	 "sourceIPAddress": "8.29.230.19", 
+	 "userAgent": "APN/1.0 HashiCorp/1.0 Terraform/1.3.777 terraform-provider-aws/5.57.0 https://registry.terraform.io/providers/hashicorp/aws aws-sdk-go-v2/1.30.1 os/linux lang/go#1.22.4 md/GOOS#linux md/GOARCH#amd64 api/apigatewayv2#1.22.1",  
+    "requestParameters": 
+    { 
+	    **"stageName": "5587y0s9d5aed",** 
+	    "autoDeploy": true, 
+	    "apiId": "pxzfkfmjo7" 
+	}, 
+...
+</code></pre></div></div>
+
+<p>Even with the stage name, we will still need to know the function name, which can be found in the following log output (shows both function name and HTTP Request type as well):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "eventVersion": "1.09",
+  "userIdentity": {
+    "type": "IAMUser",
+    "principalId": "AIDAZI2LCYXNLENAY2IQ3",
+    "arn": "arn:aws:iam::637423240666:user/dev",
+    "accountId": "637423240666",
+    "accessKeyId": "AKIAZI2LCYXNH4OISNEW",
+    "userName": "dev"
+  },
+  "eventTime": "2024-07-17T05:56:53Z",
+  "eventSource": "apigateway.amazonaws.com",
+  "eventName": "UpdateRoute",
+  "awsRegion": "ap-southeast-1",
+  "sourceIPAddress": "8.29.230.19",
+  "userAgent": "APN/1.0 HashiCorp/1.0 Terraform/1.3.7 terraform-provider-aws/5.57.0 aws-sdk-go-v2/1.30.1 os/linux lang/go#1.22.4 md/GOOS#linux md/GOARCH#amd64 api/apigatewayv2#1.22.1",
+  "requestParameters": {
+    "routeId": "id6oeig",
+    "routeKey": "POST /68fd47b8bf291eeea36480872f5ce29f0edb",
+    "apiId": "pxzfkfmjo7"
+  },
+  "responseElements": {
+    "authorizationType": "NONE",
+    "routeId": "id6oeig",
+    "apiKeyRequired": false,
+    "routeKey": "POST /68fd47b8bf291eeea36480872f5ce29f0edb",
+    "target": "integrations/9wo8sps"
+  },
+  "requestID": "e5b49d72-4664-4723-9cd3-6a9a93a4d7f2",
+  "eventID": "64c0e31e-7de1-4cc6-9136-6d1f0cce05a7",
+  "readOnly": false,
+  "eventType": "AwsApiCall",
+  "managementEvent": true,
+  "recipientAccountId": "637423240666",
+  "eventCategory": "Management"
+}
+...
+</code></pre></div></div>
+
+<p>Based on the following information, we can safely create the following REST API URL, and interacting it with a POST request:
+https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/5587y0s9d5aed/68fd47b8bf291eeea36480872f5ce29f0edb</p>
+
+<p>The following curl command was sent to the server and voila, we get the second half of the flag:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">--path-as-is</span> <span class="nt">-i</span> <span class="nt">-s</span> <span class="nt">-k</span> <span class="nt">-X</span> <span class="s1">$'POST'</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s1">$'Host: pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua: </span><span class="se">\"</span><span class="s1">Not;A=Brand</span><span class="se">\"</span><span class="s1">;v=</span><span class="se">\"</span><span class="s1">24</span><span class="se">\"</span><span class="s1">, </span><span class="se">\"</span><span class="s1">Chromium</span><span class="se">\"</span><span class="s1">;v=</span><span class="se">\"</span><span class="s1">128</span><span class="se">\"</span><span class="s1">'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua-Mobile: ?0'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Ch-Ua-Platform: </span><span class="se">\"</span><span class="s1">Windows</span><span class="se">\"</span><span class="s1">'</span> <span class="nt">-H</span> <span class="s1">$'Accept-Language: en-US,en;q=0.9'</span> <span class="nt">-H</span> <span class="s1">$'Upgrade-Insecure-Requests: 1'</span> <span class="nt">-H</span> <span class="s1">$'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.120 Safari/537.36'</span> <span class="nt">-H</span> <span class="s1">$'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Site: none'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Mode: navigate'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-User: ?1'</span> <span class="nt">-H</span> <span class="s1">$'Sec-Fetch-Dest: document'</span> <span class="nt">-H</span> <span class="s1">$'Accept-Encoding: gzip, deflate, br'</span> <span class="nt">-H</span> <span class="s1">$'Priority: u=0, i'</span> <span class="se">\</span>
+    <span class="s1">$'https://pxzfkfmjo7.execute-api.ap-southeast-1.amazonaws.com/5587y0s9d5aed/68fd47b8bf291eeea36480872f5ce29f0edb'</span>
+</code></pre></div></div>
+
+<p>Response:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTP/2 200 OK
+Date: Fri, 20 Sep 2024 19:46:35 GMT
+Content-Type: application/json
+Content-Length: 47
+Apigw-Requestid: ea2cQiZYSQ0EMQg=
+
+{"flag2": "&amp;_me-0-wn1t0r1nNnG\\//[&gt;^n^&lt;]\\//}"}
+</code></pre></div></div>
+
+<p>Final flag:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>TISC{m@ny_inf0_frOm_l0gs_&amp;_me-0-wn1t0r1nNnG\\//[&gt;^n^&lt;]\\//}
+</code></pre></div></div>
+
+<h1 id="thoughts">Thoughts</h1>
+<p>Personally i believe that if anyone wants to succeed well in this challenge, familiarisation with the AWS platform and its various services (e.g Lambda, IAM, etc). I was pretty lucky to have been exposed to this very early on, just that the tedious part was to go through tons and tons of CloudTrail logs (that were in JSON format). And to be frank, the ‘jq’ command was seriously a godsend, so thank you to whoever had invented this tool &lt;3</p>
+
+<p>But, i think last year challenge was pretty cool as i remember dealing with IAMs and the AWS CodePipeline (which involved exploiting a vulnerability from there). In other words i was expecting more of an AWS pentest exercise for this challenge, but oh wells :) still thankful in terms of upgrading my knowledge on AWS services and more importantly processing CloudTrail logs.</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <a href="/" class="back-link">← Back to index</a>
+  </footer>
+</article>
+
+  
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
