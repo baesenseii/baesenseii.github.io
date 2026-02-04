@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Infrastructure Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .device-group {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .device-group:hover {
+            transform: translateY(-2px);
+        }
+        
+        .device-group:hover rect,
+        .device-group:hover ellipse {
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        
+        .connection-line {
+            stroke: #95a5a6;
+            stroke-width: 2.5;
+            fill: none;
+        }
+        
+        .connection-line-highlight {
+            stroke: #3498db;
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .network-zone {
+            fill: none;
+            stroke: #bdc3c7;
+            stroke-width: 2;
+            stroke-dasharray: 8,4;
+            rx: 10;
+        }
+        
+        .zone-label {
+            font-size: 16px;
+            font-weight: bold;
+            fill: #34495e;
+        }
+        
+        .device-name {
+            font-size: 13px;
+            font-weight: bold;
+            fill: white;
+        }
+        
+        .device-os {
+            font-size: 11px;
+            fill: white;
+            font-style: italic;
+        }
+        
+        .ip-label {
+            font-size: 10px;
+            fill: white;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .network-label {
+            font-size: 9px;
+            fill: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .legend {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            border: 1px solid #bdc3c7;
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            margin-right: 12px;
+            border-radius: 5px;
+            border: 2px solid #34495e;
+            flex-shrink: 0;
+        }
+        
+        .legend-text {
+            font-size: 13px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .network-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .network-info h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .network-info ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .network-info li {
+            padding: 5px 0;
+            color: #34495e;
+            font-size: 13px;
+        }
+        
+        .network-info code {
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Network Infrastructure Diagram</h1>
+        <p class="subtitle">Multi-Layer Network Architecture with DMZ, Internal Segments, and Management Network</p>
+        
+        <svg width="1500" height="1000" viewBox="0 0 1500 1000">
+            <!-- Definitions -->
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#95a5a6" />
+                </marker>
+                
+                <!-- Filter for shadow effect -->
+                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                    <feOffset dx="2" dy="2" result="offsetblur"/>
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0.3"/>
+                    </feComponentTransfer>
+                    <feMerge>
+                        <feMergeNode/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Tailscale Cloud (sparksim) -->
+            <g>
+                <ellipse cx="750" cy="60" rx="100" ry="50" fill="#4A90E2" stroke="#2E5C8A" stroke-width="3" filter="url(#shadow)"/>
+                <text x="750" y="58" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">TAILSCALE</text>
+                <text x="750" y="73" text-anchor="middle" font-size="11" fill="#fff" font-style="italic">"sparksim"</text>
+            </g>
+            
+            <!-- Connection to DMZ -->
+            <line x1="750" y1="110" x2="750" y2="160" class="connection-line-highlight" marker-end="url(#arrowhead)"/>
+            <text x="760" y="135" class="network-label" fill="#4A90E2" font-weight="bold">Tailscale VPN</text>
+            
+            <!-- DMZ ZONE -->
+            <rect x="550" y="140" width="400" height="180" class="network-zone" stroke="#e74c3c" stroke-width="3"/>
+            <text x="560" y="165" class="zone-label" fill="#e74c3c">DMZ (Demilitarized Zone)</text>
+            
+            <!-- DMZ Web Server -->
+            <g class="device-group">
+                <!-- Server icon base -->
+                <rect x="650" y="190" width="200" height="110" fill="#e74c3c" stroke="#c0392b" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Server lines (to look like stacked server) -->
+                <line x1="655" y1="225" x2="845" y2="225" stroke="#c0392b" stroke-width="1.5"/>
+                <line x1="655" y1="260" x2="845" y2="260" stroke="#c0392b" stroke-width="1.5"/>
+                
+                <!-- Server indicator lights -->
+                <circle cx="670" cy="207" r="4" fill="#2ecc71"/>
+                <circle cx="685" cy="207" r="4" fill="#2ecc71"/>
+                <circle cx="670" cy="242" r="4" fill="#f39c12"/>
+                <circle cx="685" cy="242" r="4" fill="#2ecc71"/>
+                <circle cx="670" cy="277" r="4" fill="#2ecc71"/>
+                <circle cx="685" cy="277" r="4" fill="#2ecc71"/>
+                
+                <text x="750" y="210" text-anchor="middle" class="device-name">DMZ (WEB)</text>
+                <text x="750" y="227" text-anchor="middle" class="device-os">Linux Server</text>
+                <text x="750" y="247" text-anchor="middle" class="ip-label">Tailscale: 100.65.37.86/32</text>
+                <text x="750" y="262" text-anchor="middle" class="ip-label">Internal-L1: 172.34.232.15/24</text>
+                <text x="750" y="277" text-anchor="middle" class="ip-label">Management: 10.10.10.5/24</text>
+            </g>
+            
+            <!-- Connection from DMZ to Internal-L1 -->
+            <line x1="750" y1="300" x2="750" y2="370" class="connection-line" marker-end="url(#arrowhead)"/>
+            <text x="760" y="335" class="network-label">172.34.232.x</text>
+            
+            <!-- INTERNAL-L1 ZONE -->
+            <rect x="550" y="350" width="400" height="200" class="network-zone" stroke="#3498db" stroke-width="3"/>
+            <text x="560" y="375" class="zone-label" fill="#3498db">Internal-L1 (172.34.232.0/24)</text>
+            
+            <!-- C1 Workstation -->
+            <g class="device-group">
+                <!-- Desktop computer icon -->
+                <rect x="650" y="400" width="200" height="130" fill="#3498db" stroke="#2980b9" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Monitor representation -->
+                <rect x="670" y="415" width="160" height="85" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="3"/>
+                <rect x="678" y="423" width="144" height="69" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+                
+                <!-- Stand -->
+                <rect x="735" y="500" width="30" height="8" fill="#34495e" rx="2"/>
+                <rect x="720" y="508" width="60" height="5" fill="#34495e" rx="2"/>
+                
+                <text x="750" y="418" text-anchor="middle" class="device-name" fill="#3498db">C1</text>
+                <text x="750" y="440" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Windows 10</text>
+                <text x="750" y="453" text-anchor="middle" font-size="9" fill="#e74c3c" font-weight="bold">⚠ NO DEFENSES</text>
+                <text x="750" y="467" text-anchor="middle" font-size="9" fill="#2c3e50">172.34.232.98/24 (L1)</text>
+                <text x="750" y="479" text-anchor="middle" font-size="9" fill="#2c3e50">10.255.244.20/24 (L2)</text>
+                <text x="750" y="491" text-anchor="middle" font-size="9" fill="#2c3e50">10.10.10.10/24 (Mgmt)</text>
+            </g>
+            
+            <!-- Connection from C1 to Internal-L2 -->
+            <line x1="750" y1="530" x2="750" y2="600" class="connection-line" marker-end="url(#arrowhead)"/>
+            <text x="760" y="565" class="network-label">10.255.244.x</text>
+            
+            <!-- INTERNAL-L2 ZONE -->
+            <rect x="550" y="580" width="400" height="200" class="network-zone" stroke="#9b59b6" stroke-width="3"/>
+            <text x="560" y="605" class="zone-label" fill="#9b59b6">Internal-L2 (10.255.244.0/24)</text>
+            
+            <!-- DC (Domain Controller) -->
+            <g class="device-group">
+                <!-- Server icon -->
+                <rect x="650" y="630" width="200" height="130" fill="#9b59b6" stroke="#8e44ad" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Server rack lines -->
+                <line x1="655" y1="665" x2="845" y2="665" stroke="#8e44ad" stroke-width="1.5"/>
+                <line x1="655" y1="700" x2="845" y2="700" stroke="#8e44ad" stroke-width="1.5"/>
+                <line x1="655" y1="735" x2="845" y2="735" stroke="#8e44ad" stroke-width="1.5"/>
+                
+                <!-- Indicator lights -->
+                <circle cx="670" cy="647" r="4" fill="#2ecc71"/>
+                <circle cx="685" cy="647" r="4" fill="#2ecc71"/>
+                <circle cx="700" cy="647" r="4" fill="#f39c12"/>
+                <circle cx="670" cy="682" r="4" fill="#2ecc71"/>
+                <circle cx="685" cy="682" r="4" fill="#2ecc71"/>
+                <circle cx="670" cy="717" r="4" fill="#2ecc71"/>
+                <circle cx="685" cy="717" r="4" fill="#f39c12"/>
+                
+                <text x="750" y="650" text-anchor="middle" class="device-name">DC (Domain Controller)</text>
+                <text x="750" y="668" text-anchor="middle" class="device-os">Windows Server 2012</text>
+                <text x="750" y="688" text-anchor="middle" class="ip-label">Internal-L2: 10.255.244.183/24</text>
+                <text x="750" y="703" text-anchor="middle" class="ip-label">Internal-L3: 192.168.45.156/24</text>
+                <text x="750" y="718" text-anchor="middle" class="ip-label">Management: 10.10.10.15/24</text>
+            </g>
+            
+            <!-- Connection from DC to Internal-L3 -->
+            <line x1="750" y1="760" x2="750" y2="830" class="connection-line" marker-end="url(#arrowhead)"/>
+            <text x="760" y="795" class="network-label">192.168.45.x</text>
+            
+            <!-- INTERNAL-L3 ZONE -->
+            <rect x="550" y="810" width="400" height="170" class="network-zone" stroke="#16a085" stroke-width="3"/>
+            <text x="560" y="835" class="zone-label" fill="#16a085">Internal-L3 (192.168.45.0/24)</text>
+            
+            <!-- C2 Workstation -->
+            <g class="device-group">
+                <!-- Desktop computer icon -->
+                <rect x="650" y="860" width="200" height="100" fill="#16a085" stroke="#138d75" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Monitor -->
+                <rect x="670" y="875" width="160" height="60" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="3"/>
+                <rect x="678" y="883" width="144" height="44" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+                
+                <!-- Stand -->
+                <rect x="735" y="935" width="30" height="8" fill="#34495e" rx="2"/>
+                <rect x="720" y="943" width="60" height="5" fill="#34495e" rx="2"/>
+                
+                <!-- Shield icon for Windows Defender -->
+                <path d="M 810 890 L 810 905 Q 810 912 803 912 Q 796 912 796 905 L 796 890 Z" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+                <text x="803" y="903" text-anchor="middle" font-size="8" font-weight="bold" fill="white">✓</text>
+                
+                <text x="750" y="878" text-anchor="middle" class="device-name" fill="#16a085">C2</text>
+                <text x="750" y="897" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Windows 10</text>
+                <text x="750" y="910" text-anchor="middle" font-size="9" fill="#27ae60" font-weight="bold">🛡 Defender Active</text>
+                <text x="750" y="924" text-anchor="middle" font-size="9" fill="#2c3e50">192.168.45.33/24 (L3)</text>
+                <text x="750" y="936" text-anchor="middle" font-size="9" fill="#2c3e50">10.10.10.20/24 (Mgmt)</text>
+            </g>
+            
+            <!-- MANAGEMENT NETWORK ZONE (Right side) -->
+            <rect x="1050" y="350" width="400" height="630" class="network-zone" stroke="#f39c12" stroke-width="3"/>
+            <text x="1060" y="375" class="zone-label" fill="#f39c12">Management Network (10.10.10.0/24)</text>
+            
+            <!-- Tailscale Cloud (sparksim-def) for Management Network -->
+            <g>
+                <ellipse cx="1250" cy="250" rx="100" ry="50" fill="#4A90E2" stroke="#2E5C8A" stroke-width="3" filter="url(#shadow)"/>
+                <text x="1250" y="248" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">TAILSCALE</text>
+                <text x="1250" y="263" text-anchor="middle" font-size="11" fill="#fff" font-style="italic">"sparksim-def"</text>
+            </g>
+            
+            <!-- Connection from Tailscale to Management Network -->
+            <line x1="1250" y1="300" x2="1250" y2="350" class="connection-line-highlight" marker-end="url(#arrowhead)"/>
+            <text x="1260" y="325" class="network-label" fill="#4A90E2" font-weight="bold">Tailscale VPN</text>
+            
+            <!-- Connections from devices to management network -->
+            <line x1="850" y1="245" x2="1050" y2="500" class="connection-line" stroke-dasharray="5,5"/>
+            <text x="950" y="370" class="network-label" fill="#f39c12">10.10.10.5</text>
+            
+            <line x1="850" y1="465" x2="1050" y2="520" class="connection-line" stroke-dasharray="5,5"/>
+            <text x="950" y="490" class="network-label" fill="#f39c12">10.10.10.10</text>
+            
+            <line x1="850" y1="695" x2="1050" y2="580" class="connection-line" stroke-dasharray="5,5"/>
+            <text x="950" y="635" class="network-label" fill="#f39c12">10.10.10.15</text>
+            
+            <line x1="850" y1="910" x2="1050" y2="750" class="connection-line" stroke-dasharray="5,5"/>
+            <text x="950" y="830" class="network-label" fill="#f39c12">10.10.10.20</text>
+            
+            <!-- Wazuh Server -->
+            <g class="device-group">
+                <rect x="1100" y="420" width="300" height="90" fill="#34495e" stroke="#2c3e50" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Server rack indicators -->
+                <line x1="1105" y1="450" x2="1395" y2="450" stroke="#2c3e50" stroke-width="1.5"/>
+                <line x1="1105" y1="480" x2="1395" y2="480" stroke="#2c3e50" stroke-width="1.5"/>
+                
+                <circle cx="1120" cy="435" r="4" fill="#2ecc71"/>
+                <circle cx="1135" cy="435" r="4" fill="#2ecc71"/>
+                <circle cx="1150" cy="435" r="4" fill="#2ecc71"/>
+                <circle cx="1120" cy="465" r="4" fill="#f39c12"/>
+                <circle cx="1135" cy="465" r="4" fill="#2ecc71"/>
+                <circle cx="1120" cy="495" r="4" fill="#2ecc71"/>
+                <circle cx="1135" cy="495" r="4" fill="#2ecc71"/>
+                
+                <text x="1250" y="445" text-anchor="middle" class="device-name">WAZUH SERVER</text>
+                <text x="1250" y="463" text-anchor="middle" class="device-os">Security Monitoring (Linux)</text>
+                <text x="1250" y="483" text-anchor="middle" class="ip-label">Management: 10.10.10.254/24</text>
+            </g>
+            
+            <!-- SparkSIM Discord Bot -->
+            <g class="device-group">
+                <rect x="1100" y="550" width="300" height="80" fill="#7289da" stroke="#5b6eae" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Bot icon representation -->
+                <circle cx="1140" cy="590" r="18" fill="#fff" stroke="#5b6eae" stroke-width="2"/>
+                <circle cx="1133" cy="585" r="4" fill="#5b6eae"/>
+                <circle cx="1147" cy="585" r="4" fill="#5b6eae"/>
+                <path d="M 1133 598 Q 1140 603 1147 598" stroke="#5b6eae" stroke-width="2" fill="none"/>
+                
+                <text x="1250" y="580" text-anchor="middle" class="device-name">SparkSIM Discord Bot</text>
+                <text x="1250" y="598" text-anchor="middle" class="device-os">Discord Integration Service</text>
+                <text x="1250" y="616" text-anchor="middle" class="ip-label">Management: 10.10.10.1/24</text>
+            </g>
+            
+            <!-- Guacamole Server -->
+            <g class="device-group">
+                <rect x="1100" y="670" width="300" height="90" fill="#27ae60" stroke="#229954" stroke-width="2.5" rx="8" filter="url(#shadow)"/>
+                
+                <!-- Server lines -->
+                <line x1="1105" y1="700" x2="1395" y2="700" stroke="#229954" stroke-width="1.5"/>
+                <line x1="1105" y1="730" x2="1395" y2="730" stroke="#229954" stroke-width="1.5"/>
+                
+                <!-- Remote access icon -->
+                <rect x="1120" y="683" width="25" height="18" fill="#ecf0f1" stroke="#229954" stroke-width="1.5" rx="2"/>
+                <circle cx="1132.5" cy="692" r="3" fill="#229954"/>
+                
+                <circle cx="1120" cy="685" r="4" fill="#2ecc71"/>
+                <circle cx="1135" cy="685" r="4" fill="#2ecc71"/>
+                <circle cx="1120" cy="715" r="4" fill="#2ecc71"/>
+                <circle cx="1135" cy="715" r="4" fill="#2ecc71"/>
+                <circle cx="1120" cy="745" r="4" fill="#f39c12"/>
+                <circle cx="1135" cy="745" r="4" fill="#2ecc71"/>
+                
+                <text x="1250" y="695" text-anchor="middle" class="device-name">GUACAMOLE SERVER</text>
+                <text x="1250" y="713" text-anchor="middle" class="device-os">Remote Desktop Gateway</text>
+                <text x="1250" y="733" text-anchor="middle" class="ip-label">Management: 10.10.10.25/24</text>
+            </g>
+            
+            <!-- Network segment labels -->
+            <text x="100" y="245" font-size="12" font-weight="bold" fill="#e74c3c">↑ External Access</text>
+            <text x="100" y="465" font-size="12" font-weight="bold" fill="#3498db">↓ Internal Layer 1</text>
+            <text x="100" y="695" font-size="12" font-weight="bold" fill="#9b59b6">↓ Internal Layer 2</text>
+            <text x="100" y="910" font-size="12" font-weight="bold" fill="#16a085">↓ Internal Layer 3</text>
+            
+        </svg>
+        
+        <div class="legend">
+            <h3>📋 Legend - Device Types & Network Segments</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #e74c3c;"></span>
+                    <span class="legend-text">DMZ - Web Server (External Facing)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #3498db;"></span>
+                    <span class="legend-text">Internal-L1 - Client Workstation (Unprotected)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #9b59b6;"></span>
+                    <span class="legend-text">Internal-L2 - Domain Controller</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #16a085;"></span>
+                    <span class="legend-text">Internal-L3 - Client Workstation (Protected)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #34495e;"></span>
+                    <span class="legend-text">Management - Wazuh Security Monitor</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #7289da;"></span>
+                    <span class="legend-text">Management - SparkSIM Bot Service</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #27ae60;"></span>
+                    <span class="legend-text">Management - Guacamole Remote Access</span>
+                </div>
+                <div class="legend-item">
+                    <span style="display: inline-block; width: 30px; height: 3px; background-color: #95a5a6; margin-right: 12px;"></span>
+                    <span class="legend-text">Wired Network Connection</span>
+                </div>
+                <div class="legend-item">
+                    <span style="display: inline-block; width: 30px; height: 3px; background: repeating-linear-gradient(to right, #f39c12 0, #f39c12 5px, transparent 5px, transparent 10px); margin-right: 12px;"></span>
+                    <span class="legend-text">Management Network Connection</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="network-info">
+            <h4>🔒 Network Architecture Summary</h4>
+            <ul>
+                <li><strong>Tailscale VPN Connectivity:</strong></li>
+                <li>• <code>"sparksim"</code> - External Tailscale network connected to DMZ (100.65.37.86/32)</li>
+                <li>• <code>"sparksim-def"</code> - Management Tailscale network for secure remote administration</li>
+                <li style="margin-top: 10px;"><strong>Network Segments:</strong></li>
+                <li>• <code>DMZ</code> - Exposed web server with Tailscale VPN (100.65.37.86/32) and internal access</li>
+                <li>• <code>Internal-L1 (172.34.232.0/24)</code> - First internal layer with unprotected Windows 10 client</li>
+                <li>• <code>Internal-L2 (10.255.244.0/24)</code> - Second layer hosting Domain Controller (Windows Server 2012)</li>
+                <li>• <code>Internal-L3 (192.168.45.0/24)</code> - Third layer with protected Windows 10 client (Defender active)</li>
+                <li>• <code>Management Network (10.10.10.0/24)</code> - Dedicated network for monitoring, remote access, and bot services</li>
+                <li style="margin-top: 10px;"><strong>Security Notes:</strong></li>
+                <li>⚠️ <strong>C1</strong> has no active defenses - High risk endpoint</li>
+                <li>🛡️ <strong>C2</strong> has Windows Defender active - Protected endpoint</li>
+                <li>🔍 <strong>Wazuh Server</strong> provides centralized security monitoring across all network segments</li>
+                <li>🌐 <strong>Guacamole</strong> enables secure remote desktop access via web browser</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

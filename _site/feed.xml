@@ -1,4 +1,313 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-02-01T05:55:06-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">baesenseii@cyber</title><subtitle>Offensive Security &amp; Infrastructure Automation</subtitle><author><name>baesenseii</name></author><entry><title type="html">Bringing back the old school: Good ol’ Attack-Defense CTF Environments</title><link href="http://localhost:4000/posts/old_skool_atkdef_251292cc/" rel="alternate" type="text/html" title="Bringing back the old school: Good ol’ Attack-Defense CTF Environments" /><published>2025-03-21T00:00:00-05:00</published><updated>2025-03-21T00:00:00-05:00</updated><id>http://localhost:4000/posts/old_skool_atkdef_251292cc</id><content type="html" xml:base="http://localhost:4000/posts/old_skool_atkdef_251292cc/"><![CDATA[<p>I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-02-04T01:09:42-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">baesenseii@cyber</title><subtitle>Offensive Security &amp; Infrastructure Automation</subtitle><author><name>baesenseii</name></author><entry><title type="html">SparkSIM - A Low-Cost Red vs Blue Platform for Student Red Teamers</title><link href="http://localhost:4000/posts/sparksim_red_vs_blue_platform_9decf35e/" rel="alternate" type="text/html" title="SparkSIM - A Low-Cost Red vs Blue Platform for Student Red Teamers" /><published>2026-02-04T00:00:00-06:00</published><updated>2026-02-04T00:00:00-06:00</updated><id>http://localhost:4000/posts/sparksim_red_vs_blue_platform_9decf35e</id><content type="html" xml:base="http://localhost:4000/posts/sparksim_red_vs_blue_platform_9decf35e/"><![CDATA[<p>In a previous article, I discussed the current state of CTF competitions and how the landscape has become saturated with jeopardy-style CTFs. While these competitions are valuable learning tools, they often fail to prepare aspiring penetration testers for one critical aspect of real-world security work: Operational Security (OPSEC).</p>
+
+<p>Many students entering the field don’t understand that even authorized attacks are still attacks. Every action leaves traces. Every command generates logs. Every exploit triggers alerts. In real penetration testing engagements, these activities can trigger incident response protocols, potentially complicating the engagement despite being fully authorized. Understanding how to operate stealthily, how defenders see your actions, and how to balance effectiveness with discretion is crucial for professional red teamers.</p>
+
+<p>To address this gap, I designed SparkSIM—a red versus blue simulation environment. I invited several students who had participated in SparkCTF, our internal Capture the Flag competition catered for Temasek Polytechnic students, to experience security from both sides of the fence.</p>
+
+<h2 id="event-overview">Event Overview</h2>
+
+<p>SparkSIM ran for one complete week during the final days of 2025, from December 26th at 12:00 AM through January 2nd, 2026 at 12:00 AM. The competition was structured as a closed-door session with limited participants to ensure quality interaction and learning.</p>
+
+<h3 id="team-composition">Team Composition</h3>
+
+<p>The participants were divided into two distinct teams:</p>
+
+<p><strong>Red Team:</strong> Comprised primarily of invited participants from SparkCTF who showed promise in offensive security. These students had demonstrated technical aptitude but lacked exposure to defensive perspectives and OPSEC considerations.</p>
+
+<p><strong>Blue Team:</strong> A carefully selected group of former students and colleagues from Temasek Polytechnic who had experience in defensive security, incident response, and system administration.</p>
+
+<h3 id="network-architecture">Network Architecture</h3>
+
+<p>The environment consisted of four machines connected in a linear topology—essentially a linked list structure. This design was intentional: it forced red teamers to progress through each machine sequentially, preventing them from skipping ahead and ensuring they experienced the full attack path. I’ll admit the linear design was also partly motivated by my laziness in setting up complex routing configurations.</p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-network-diagram.png" alt="" /></p>
+
+<p><em>Figure 1: SparkSIM network topology showing the linear progression from DMZ through C1, DC, to C2</em></p>
+
+<p>If you want the full network diagram, <a href="/assets/html/network-diagram-complete.html"><u>click here</u></a></p>
+
+<p>The attack path followed this progression:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>Node Name</strong></th>
+      <th><strong>Attack Vector</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DMZ (Start Point)</td>
+      <td>Web Application (Betting Portal)<br />- AV1: Polyglot PHP File Upload to RCE<br />- AV2: SQL Injection with Root File Write Capability</td>
+    </tr>
+    <tr>
+      <td>C1</td>
+      <td>Vanilla Buffer Overflow Vulnerability on custom Windows application (HOSEHBO)<br />Cached Domain Admin Credentials</td>
+    </tr>
+    <tr>
+      <td>DC</td>
+      <td>Authenticated Lateral Movement with Domain Admin Credentials</td>
+    </tr>
+    <tr>
+      <td>C2</td>
+      <td>Authenticated Lateral Movement with Domain Admin Credentials via WinRM</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="the-blue-team-setup">The Blue Team Setup</h2>
+
+<h3 id="solving-asset-management-challenges">Solving Asset Management Challenges</h3>
+
+<p>During my previous attempt at designing an attack/defense CTF, I identified several critical pain points in managing the blue team infrastructure:</p>
+
+<ol>
+  <li>
+    <p><strong>Credential Overload:</strong> Managing administrative credentials across multiple targeted assets became overwhelming. Different SSH keys for different machines, various usernames and passwords—it was a nightmare to organize and share securely with team members.</p>
+  </li>
+  <li>
+    <p><strong>Access Tracking:</strong> There was no efficient way to track the last time an asset was accessed, making it difficult to correlate defensive actions with timeline events.</p>
+  </li>
+  <li>
+    <p><strong>Application Sprawl:</strong> Defenders needed to launch separate applications for different tasks—Remote Desktop Connection for Windows machines, terminal sessions for SSH access, different tools for different protocols. Context switching slowed down response times.</p>
+  </li>
+</ol>
+
+<h3 id="apache-guacamole-centralized-access-control">Apache Guacamole: Centralized Access Control</h3>
+
+<p>To address these challenges, I implemented Apache Guacamole as a centralized access gateway. Guacamole is a clientless remote desktop gateway that supports standard protocols like RDP, SSH, and VNC entirely through a web browser—no plugins or client software required.</p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-guacamole-sample.png" alt="" /></p>
+
+<p>The implementation strategy involved creating separate user accounts for blue teamers based on their roles:</p>
+
+<ul>
+  <li><strong>Incident Responders:</strong> Granted access only to Windows machines via RDP and DMZ SSH access for log analysis</li>
+  <li><strong>Security Engineers:</strong> Full access to the Wazuh SIEM box for security monitoring and alert management</li>
+</ul>
+
+<p>This role-based access control (RBAC) approach meant that team members only saw the systems relevant to their responsibilities, reducing complexity and potential for mistakes.</p>
+
+<h3 id="tailscale-the-networking-game-changer">Tailscale: The Networking Game-Changer</h3>
+
+<p>In my previous attack/defense CTF, I had used ZeroTier for creating isolated network zones. While functional, ZeroTier presented significant operational overhead. Every machine required manual approval through the ZeroTier admin console, making onboarding tedious and time-consuming.</p>
+
+<p>Tailscale proved to be a revelation. The killer feature that made everything smoother was the ability to onboard machines using authentication keys. Even better, these keys could be configured to automatically assign tags during onboarding, which we leveraged extensively for access control.</p>
+
+<h4 id="the-onboarding-process">The Onboarding Process</h4>
+
+<p>For the blue team infrastructure, we created a reusable authentication key tagged with <code class="language-plaintext highlighter-rouge">sparksim-def</code>. This key was distributed to all blue team members to onboard their personal devices into the defensive Tailnet. The Wazuh SIEM and Guacamole machines were also configured to join the <code class="language-plaintext highlighter-rouge">sparksim-def</code> Tailnet, making them instantly accessible to authenticated blue team members.</p>
+
+<p>For red team participants, we generated a separate reusable key tagged with <code class="language-plaintext highlighter-rouge">sparksim</code>. This separation was crucial—it allowed us to implement network-level access controls based on tags, ensuring proper isolation between offensive and defensive infrastructure while maintaining simplicity in deployment.</p>
+
+<p>The beauty of this approach was its simplicity: participants just needed to install Tailscale and authenticate with their provided key. No manual approval queues, no waiting for admin intervention—just instant network access with proper segmentation.</p>
+
+<h2 id="conduct-of-event">Conduct of Event</h2>
+
+<p>The SparkSIM exercise was conducted as a closed-door session with eight student participants. The competitive element remained strong—only four participants successfully compromised all machines and gained access to C2, the final target.</p>
+
+<h3 id="objective-verification-beyond-static-flags">Objective Verification: Beyond Static Flags</h3>
+
+<p>One of my primary design goals was ensuring that participants achieved genuine hands-on objectives rather than just collecting shared flags. In traditional CTFs, static flags suffer from a critical flaw: flag sharing. Once one person finds a flag, it can spread through the entire community, defeating the purpose of the challenge.</p>
+
+<p>Since all participants were already in the SparkCTF Discord server, I needed a verification mechanism that confirmed actual system access while preventing flag sharing. Simply placing a static flag on C2 wouldn’t work—it would inevitably be shared among participants.</p>
+
+<h4 id="the-dynamic-verification-bot">The Dynamic Verification Bot</h4>
+
+<p>The solution was implementing a Discord bot with dynamic, personalized verification:</p>
+
+<p><strong>Architecture:</strong></p>
+<ol>
+  <li>The Discord bot was deployed on the blue team (<code class="language-plaintext highlighter-rouge">sparksim-def</code>) network with visibility into the competition infrastructure</li>
+  <li>The bot maintained a WinRM connection to C2 using a high-privileged service account</li>
+  <li>Upon receiving a participant’s request, the bot would:
+    <ul>
+      <li>Scan the C:\ drive to identify folders with write permissions</li>
+      <li>Randomly select one of these writable folders</li>
+      <li>Generate a unique SHA256 hash</li>
+      <li>Create a file named <code class="language-plaintext highlighter-rouge">secret.txt</code> containing this hash in the selected folder</li>
+      <li>Store the hash and folder location in memory, associated with the requesting user</li>
+    </ul>
+  </li>
+</ol>
+
+<p><strong>Verification Process:</strong></p>
+<ol>
+  <li>Participants would send a direct message to the Discord bot</li>
+  <li>The bot would respond with the randomly selected folder location</li>
+  <li>Participants needed to navigate to C2, find the file, and send its contents back to the bot</li>
+  <li>If the hash matched, the bot would:
+    <ul>
+      <li>Record the participant’s Discord username on the scoreboard with a timestamp</li>
+      <li>Delete the current <code class="language-plaintext highlighter-rouge">secret.txt</code> file</li>
+      <li>Generate a new random folder, hash, and file for the next verification</li>
+    </ul>
+  </li>
+</ol>
+
+<p>This approach ensured that:</p>
+<ul>
+  <li>Each verification was unique and time-limited</li>
+  <li>Participants couldn’t share answers (the hash changed after each successful verification)</li>
+  <li>We had proof of actual system access, not just flag knowledge</li>
+  <li>The verification remained automated and scalable</li>
+</ul>
+
+<p>I won’t share the complete bot source code here, but with modern AI tools like Claude (yes, Claude helped me build this bot), creating similar verification mechanisms is straightforward.</p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-bot_flagsubmission_1.png" alt="" /></p>
+
+<h3 id="real-time-intelligence-feed">Real-Time Intelligence Feed</h3>
+
+<p>Communication and situational awareness are critical in both offensive and defensive operations. To simulate realistic intelligence sharing, I created a <code class="language-plaintext highlighter-rouge">#sparksim-bulletin</code> text channel that served as a centralized intelligence feed.</p>
+
+<p>This channel provided daily and real-time updates about:</p>
+<ul>
+  <li>Detected intrusion attempts</li>
+  <li>Defensive actions taken (e.g., account lockouts, service restarts)</li>
+  <li>System changes and patches applied</li>
+  <li>Alert summaries from the Wazuh SIEM</li>
+  <li>Incident response activities</li>
+</ul>
+
+<p>The feed was deliberately made visible to both red and blue teams. This design choice created an interesting dynamic—attackers could see defensive responses, and defenders knew their actions were being observed. It mimicked how threat intelligence operates in real organizations, where defenders share information to make informed decisions, while sophisticated attackers monitor their targets’ security posture.</p>
+
+<p>This transparency forced red teamers to consider their OPSEC carefully. If they were too noisy and triggered alerts, they’d see the blue team’s response in near real-time. It also allowed blue teamers to demonstrate their detection capabilities and potentially deter certain attack paths through visible defensive actions.</p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-bulletin_1.png" alt="" /></p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-bulletin_2.png" alt="" /></p>
+
+<h2 id="results-and-analysis">Results and Analysis</h2>
+
+<p>Of the eight participants, only four successfully compromised all four machines and gained access to C2. This 50% success rate was actually ideal—it indicated the difficulty was well-calibrated. The environment was challenging enough to be meaningful but not so difficult that it discouraged learning.</p>
+
+<p><img src="/assets/post-images/2026-02-04-sparksim_red_vs_blue_platform_9decf35e/sparksim-scoreboard.png" alt="Scoreboard Results" />
+<em>Figure 2: Final scoreboard showing successful C2 access timestamps</em></p>
+
+<h3 id="behavioral-observations">Behavioral Observations</h3>
+
+<p>One of the most interesting aspects of SparkSIM was observing participant behavior throughout the week:</p>
+
+<p><strong>Initial Competition Mindset:</strong> At the start, participants were extremely reluctant to help each other. They treated SparkSIM like a traditional CTF where collaboration meant giving up competitive advantage. Players focused narrowly on their assigned objectives, hoarding information and techniques.</p>
+
+<p><strong>Evolution Toward Collaboration:</strong> As the week progressed and participants encountered increasingly complex challenges, I noticed a shift. Students began sharing reconnaissance findings, discussing defensive countermeasures they observed, and even coordinating multi-phase attacks. This collaborative evolution was exactly what I hoped to see—it mirrors how real red team engagements operate.</p>
+
+<p>In professional red teaming, success depends on team coordination. Specialists in web exploitation, Active Directory attacks, social engineering, and persistence mechanisms must work together seamlessly. No single person can be expert in everything. SparkSIM successfully demonstrated this reality to participants who were accustomed to solo CTF problem-solving.</p>
+
+<h2 id="personal-reflections">Personal Reflections</h2>
+
+<h3 id="the-defenders-perspective">The Defender’s Perspective</h3>
+
+<p>Running both red and blue teams simultaneously provided me with invaluable insights. Playing the blue team role was particularly eye-opening. I had conducted penetration tests before, but seeing attacks from the defensive side completely changed my understanding of operational security.</p>
+
+<p><strong>Attack Noise and Detection:</strong> The participants’ attacks were incredibly noisy. Actions I might have considered “stealthy” in isolation became glaringly obvious when viewed through defensive monitoring tools. Rapid-fire login attempts, unusual process execution patterns, abnormal network connections—all of these generated clear indicators of compromise.</p>
+
+<p>The Wazuh SIEM captured nearly everything:</p>
+<ul>
+  <li>Failed authentication attempts from unusual source IPs</li>
+  <li>Process creation events for suspicious binaries</li>
+  <li>File modifications in sensitive directories</li>
+  <li>Network connections to C2 infrastructure</li>
+  <li>PowerShell execution with suspicious command-line parameters</li>
+</ul>
+
+<p>Reviewing these logs made me fundamentally reconsider how I approach red team engagements. Even authorized penetration testing triggers incident response protocols. While we have permission to attack, we’re still generating alerts, consuming defensive team resources, and potentially disrupting operations. Being conscious of this impact and minimizing unnecessary noise should be a professional responsibility.</p>
+
+<h3 id="opsec-consciousness">OPSEC Consciousness</h3>
+
+<p>SparkSIM successfully instilled OPSEC awareness in participants. By making the <code class="language-plaintext highlighter-rouge">#sparksim-bulletin</code> channel visible to attackers, they could see exactly when their actions were detected. Some examples from the feed:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[2024-12-27 14:23:15] ALERT: Multiple failed SSH authentication attempts detected from 100.x.x.x targeting DMZ host
+[2024-12-27 14:25:42] ACTION: Temporary IP block applied to 100.x.x.x for 30 minutes
+[2024-12-28 09:15:33] ALERT: Unusual PowerShell execution detected on C1 - Investigating
+[2024-12-28 09:18:21] ACTION: Suspicious process terminated, forensic snapshot captured
+</code></pre></div></div>
+
+<p>Seeing these real-time responses forced attackers to think about their operational security. Some participants adapted by:</p>
+<ul>
+  <li>Slowing down their enumeration to avoid rate-based detection</li>
+  <li>Using legitimate system tools instead of obvious hacking utilities</li>
+  <li>Spacing out authentication attempts</li>
+  <li>Clearing logs more carefully (though this also generated alerts)</li>
+</ul>
+
+<p>These adaptations represent exactly the mindset professional red teamers need—constantly thinking about how defenders see your actions and adjusting techniques accordingly.</p>
+
+<h3 id="the-value-of-attackdefense-formats">The Value of Attack/Defense Formats</h3>
+
+<p>SparkSIM reinforced my belief that attack/defense exercises provide vastly superior learning experiences compared to traditional jeopardy CTFs for students aspiring to professional offensive security roles.</p>
+
+<p><strong>Skills Developed in SparkSIM That Traditional CTFs Don’t Teach:</strong></p>
+<ul>
+  <li>Understanding defensive visibility and detection capabilities</li>
+  <li>Operational security and attack noise management</li>
+  <li>Persistence strategies that balance effectiveness with stealth</li>
+  <li>Log manipulation and anti-forensics techniques</li>
+  <li>Collaboration and team coordination under pressure</li>
+  <li>Time management in extended engagements</li>
+  <li>Adapting to active defenses and incident response</li>
+</ul>
+
+<p>Traditional CTFs excel at teaching exploitation techniques and problem-solving skills. But they don’t prepare students for the reality that every action has consequences, every command generates logs, and professional security is a conversation between attackers and defenders.</p>
+
+<h2 id="lessons-learned-and-future-improvements">Lessons Learned and Future Improvements</h2>
+
+<h3 id="what-worked-well">What Worked Well</h3>
+
+<p><strong>Tailscale for Network Management:</strong> The switch from ZeroTier to Tailscale dramatically simplified onboarding and network management. The ability to use reusable authentication keys with automatic tagging made scaling the infrastructure trivial.</p>
+
+<p><strong>Apache Guacamole for Centralized Access:</strong> Blue team members consistently praised Guacamole for eliminating the complexity of managing multiple remote access tools and credentials. The web-based interface meant they could respond to incidents from any device with a browser.</p>
+
+<p><strong>Dynamic Verification System:</strong> The Discord bot verification system successfully prevented flag sharing while maintaining automated verification at scale. No manual checking required, and we had timestamped proof of access for every participant.</p>
+
+<p><strong>Intelligence Feed Transparency:</strong> Making the <code class="language-plaintext highlighter-rouge">#sparksim-bulletin</code> channel visible to both teams created the desired OPSEC awareness without requiring explicit instruction. Participants learned by seeing their actions from the defender’s perspective.</p>
+
+<h3 id="areas-for-improvement">Areas for Improvement</h3>
+
+<p><strong>Attack Path Complexity:</strong> The linear attack path, while simple to design and manage, limited the exploration and creativity participants could exercise. Future iterations should include multiple paths to objectives, optional lateral movement opportunities, and red herrings to investigate.</p>
+
+<p><strong>Blue Team Engagement:</strong> While the red team was highly engaged throughout the week, blue team activity was more reactive and episodic. I need to design more proactive defensive objectives—perhaps vulnerability remediation challenges, detection rule creation tasks, or forensic investigation scenarios.</p>
+
+<p><strong>Scoring Granularity:</strong> The verification system only tracked final C2 access. Future versions should include intermediate objectives on C1 and DC to better track progress and maintain engagement even for participants who don’t achieve full compromise.</p>
+
+<p><strong>Documentation and Debrief:</strong> I didn’t maintain detailed enough notes during the event about specific attacks, defensive responses, and learning moments. A structured after-action review with both teams would have captured more valuable lessons learned.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>SparkSIM achieved its primary objective: exposing students to the realities of operational security and the defender’s perspective on offensive activities. The exercise successfully bridged the gap between jeopardy CTF skills and professional red teaming requirements.</p>
+
+<p>The most rewarding moment came during the final debrief when several participants said they would approach future penetration tests completely differently, with constant consideration for how defenders would see their actions. Mission accomplished.</p>
+
+<p>For educators and trainers in cybersecurity, I strongly encourage incorporating attack/defense elements into your programs. The technical skills students develop in traditional CTFs are valuable, but understanding the full security ecosystem—attackers, defenders, detection, response—creates more well-rounded security professionals.</p>
+
+<p>Building SparkSIM was a labor of love, but the infrastructure costs were minimal (mostly AWS EC2 instances during the event week), and the learning outcomes far exceeded traditional training approaches. If you’re considering running a similar exercise, feel free to reach out—I’m happy to share lessons learned and technical implementation details.</p>
+
+<p>Remember: security is a conversation between attackers and defenders. To truly understand one side, you must experience both.</p>
+
+<h2 id="technical-specifications">Technical Specifications</h2>
+
+<p>For those interested in replicating this environment:</p>
+
+<p><strong>Infrastructure:</strong></p>
+<ul>
+  <li>4x Windows Server 2019 instances (DMZ, C1, DC, C2)</li>
+  <li>1x Ubuntu 22.04 for Wazuh SIEM</li>
+  <li>1x Ubuntu 22.04 for Apache Guacamole</li>
+  <li>1x Ubuntu 22.04 for Discord bot</li>
+  <li>Tailscale for network connectivity</li>
+  <li>Total runtime: 7 days</li>
+  <li>Estimated cost: ~$120 USD (AWS EC2 instances)</li>
+</ul>
+
+<p><strong>Tools and Services:</strong></p>
+<ul>
+  <li><a href="https://tailscale.com/">Tailscale</a> - Zero-config VPN</li>
+  <li><a href="https://guacamole.apache.org/">Apache Guacamole</a> - Clientless remote desktop gateway</li>
+  <li><a href="https://wazuh.com/">Wazuh</a> - Open-source SIEM and XDR platform</li>
+  <li><a href="https://discordpy.readthedocs.io/">Discord.py</a> - Python Discord bot library</li>
+</ul>
+
+<p>The return on investment, measured in participant learning and engagement, was exceptional.</p>]]></content><author><name>baesenseii</name></author><category term="research" /><category term="red-team" /><category term="blue-team" /><category term="ctf" /><category term="education" /><summary type="html"><![CDATA[In a previous article, I discussed the current state of CTF competitions and how the landscape has become saturated with jeopardy-style CTFs. While these competitions are valuable learning tools, they often fail to prepare aspiring penetration testers for one critical aspect of real-world security work: Operational Security (OPSEC).]]></summary></entry><entry><title type="html">Bringing back the old school: Good ol’ Attack-Defense CTF Environments</title><link href="http://localhost:4000/posts/old_skool_atkdef_251292cc/" rel="alternate" type="text/html" title="Bringing back the old school: Good ol’ Attack-Defense CTF Environments" /><published>2025-03-21T00:00:00-05:00</published><updated>2025-03-21T00:00:00-05:00</updated><id>http://localhost:4000/posts/old_skool_atkdef_251292cc</id><content type="html" xml:base="http://localhost:4000/posts/old_skool_atkdef_251292cc/"><![CDATA[<p>I think this would be one of the most technical and lengthy writeup that I have ever done since The InfoSecurity Challenge 2024 CTF writeups by CSIT.</p>
 <h1 id="preface">Preface</h1>
 
 <p>For those of you who may not know, I “volunteered” to be one of the Worldskills Coaches under the Cyber Security trait to train individuals to represent the polytechnic that I’m working in. Being the ONLY lecturer with CTF/Cybersecurity competition experience, I took up the responsibility of training the students for the CTF component (as it is part of the actual competition based on the technical specs here):</p>
@@ -1928,55 +2237,4 @@ sample.close()
 
 <p>I also took this opportunity to practise my scripting skills (yes yes, i know people keep talking about using GenAI to create the script, but i believe that by doing so, you shortchange the ability to think logically in terms of the flow of data when building your script). I know that many people would rather just edit the provided AG card using hex editors and such, but the idea of scripting out the construct of the new AG card personally helps you as a security researcher to logically provide a solution to anyone without effort required.</p>
 
-<p>I mean, even taking the effort to do a writeup something like this takes a considerable amount of effort for me because it requires me to think about the flow / thought process when approaching the challenge and how do i convey it right so that people can comprehend the writeup after reading it.</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[I guess the one thing that i will remember from this challenge is this:]]></summary></entry><entry><title type="html">CSIT TISC 2024 CTF Challenge 3 - Digging Up History</title><link href="http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3/" rel="alternate" type="text/html" title="CSIT TISC 2024 CTF Challenge 3 - Digging Up History" /><published>2024-10-16T00:00:00-05:00</published><updated>2024-10-16T00:00:00-05:00</updated><id>http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3</id><content type="html" xml:base="http://localhost:4000/posts/tisc24_challenge_3_8ab5e6e3/"><![CDATA[<p>Quite a cheesy description for this challenge, but it looks to me that this is some forensics related stuff that we need to deal with (sigh, i don’t really like forensics to be honest haha).</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053657.png" alt="" /></p>
-
-<p>The moment the ZIP file was downloaded and unzipped (password for the ZIP file was located in the provided metadata.txt file), we are presented with the following information:</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20241017002917.png" alt="" /></p>
-
-<p>Just by the file extension alone, it turns out that this is a disk image created using AccessData FTK. There is a free tool called FTK Imager that you can use to access the image (works well on Windows), so I fired up my FLARE VM and installed FTK Imager. Once done, the .ad1 file was loaded and this is what was shown (which looks like a typical C:\ drive of a machine with Windows installed):</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053707.png" alt="" /></p>
-
-<p>Now do note that this is on Windows, and i just hate searching files through the User Interface (because imma leet hacker, and hackerz only use CLI to navigate). So I decided to export out all the files and transfer it to my Linux host machine:</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053712.png" alt="" /></p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053717.png" alt="" /></p>
-
-<p>Now one of the main things in Computer Forensics that you would usually do is to get a quick sensing, or a profile of the softwares that are being used. In the Challenge Description it was mentioned that the target of interest has “a history of hiding sensitive data through file sharing sites…”, which indicates that it has something to do with web history data. This brings us to the “Application Data” folder for the main user csitfan1, which shows folders whose names represent famous web browses (e.g Mozilla = Firefox, Microsoft = Edge):</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053726.png" alt="" /></p>
-
-<p>The folder Mypal68 was an interesting folder as i have never seen it before, but it turns out that it is also a web browser that allows compatibility of websites powered by new technology such as HTML5, via outdated, unsupported systems such as Windows XP:</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20240930053743.png" alt="" /></p>
-
-<p>And since we can leverage Linux and its powerful string manipulation and file searches using a variety of Linux commands, the following Linux command was used to dump all the URLs visited via the Mypal68 folder (as it was the biggest in file size), and write it to a file called ‘urlhistory_mypal68.txt’:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>strings Local Settings/Application Data/Mypal68/Profiles/a80ofn6a.default-default/cache2/* | grep -ar -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" | cut -d ":" -f 2,3 | sort -u &gt; ~/Documents/tisc_2024/challenge3/urlhistory_mypal68.txt
-</code></pre></div></div>
-
-<p>When going through the list, we see a familiar URL that is notoriously known for file storage (and the filename was a giveaway too):</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
-...
-https://csitfan-chall.s3.amazonaws.com/flag.sus
-...
-...
-</code></pre></div></div>
-
-<p>The file was then downloaded and it turned out to be a Base64-encoded string value. All it took was to use the built-in base64 decoder program in Linux and VOILA, the flag appears :)</p>
-
-<p><img src="/assets/images/tisc-2024/Pasted image 20241017004309.png" alt="" />
-<img src="/assets/images/tisc-2024/Pasted image 20241017004430.png" alt="" /></p>
-
-<p>Flag: TISC{tru3_1nt3rn3t_h1st0r13_8445632pq78dfn3s}</p>
-<h1 id="thoughts">Thoughts</h1>
-<p>I am going to be real honest about this challenge; this one was a bit underwhelming as a CTF challenge. No doubt that yes it seems more of an introduction to computer forensics and file analysis, but i felt that this is even easier than challenge-1, which was the opening challenge.</p>
-
-<p>Maybe one such consideration to be made is to include a ‘memory analysis’ portion of the challenge (or at least the usage of the Volatility framework), and maybe the memory analysis portion would lead to the password of the ZIP file that contains the disk (I believe it might have been done using a Windows XP Virtual Machine, so you could also provide the .vmem file for the memory analysis portion)</p>
-
-<p>Then i would think that it would be an interesting challenge and probably many people would have benefited a lot more, but good try nevertheless :)</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[Quite a cheesy description for this challenge, but it looks to me that this is some forensics related stuff that we need to deal with (sigh, i don’t really like forensics to be honest haha).]]></summary></entry></feed>
+<p>I mean, even taking the effort to do a writeup something like this takes a considerable amount of effort for me because it requires me to think about the flow / thought process when approaching the challenge and how do i convey it right so that people can comprehend the writeup after reading it.</p>]]></content><author><name>baesenseii</name></author><category term="ctf" /><category term="tisc2024" /><summary type="html"><![CDATA[I guess the one thing that i will remember from this challenge is this:]]></summary></entry></feed>
