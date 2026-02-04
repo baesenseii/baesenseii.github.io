@@ -240,7 +240,7 @@ The most rewarding moment came during the final debrief when several participant
 
 For educators and trainers in cybersecurity, I strongly encourage incorporating attack/defense elements into your programs. The technical skills students develop in traditional CTFs are valuable, but understanding the full security ecosystem—attackers, defenders, detection, response—creates more well-rounded security professionals.
 
-Building SparkSIM was a labor of love, but the infrastructure costs were minimal (mostly AWS EC2 instances during the event week), and the learning outcomes far exceeded traditional training approaches. If you're considering running a similar exercise, feel free to reach out—I'm happy to share lessons learned and technical implementation details.
+Building SparkSIM was a labor of love, but the infrastructure costs were minimal (hosted on my own physically-managed servers), and the learning outcomes far exceeded traditional training approaches. If you're considering running a similar exercise, feel free to reach out—I'm happy to share lessons learned and technical implementation details.
 
 Remember: security is a conversation between attackers and defenders. To truly understand one side, you must experience both.
 
@@ -249,13 +249,16 @@ Remember: security is a conversation between attackers and defenders. To truly u
 For those interested in replicating this environment:
 
 **Infrastructure:**
-- 4x Windows Server 2019 instances (DMZ, C1, DC, C2)
-- 1x Ubuntu 22.04 for Wazuh SIEM
-- 1x Ubuntu 22.04 for Apache Guacamole
-- 1x Ubuntu 22.04 for Discord bot
+- 1x Windows Server 2022 Datacenter (Evaluation)
+- 2x Windows 10 Developer Edition instances (C1,C2)
+- 1x Ubuntu 24.04 for DMZ Web Application (BetPortal)
+- 1x Ubuntu 24.04 for Wazuh SIEM
+- 1x Ubuntu 24.04 for Apache Guacamole
+- 1x Ubuntu 24.04 for Discord bot
+- Docker and Docker-Compose (for containerised application deployment of Wazuh, Guacamole, Discord bot)
 - Tailscale for network connectivity
 - Total runtime: 7 days
-- Estimated cost: ~$120 USD (AWS EC2 instances)
+- Estimated cost: FREE (except for electricity bills :))
 
 **Tools and Services:**
 - [Tailscale](https://tailscale.com/) - Zero-config VPN
